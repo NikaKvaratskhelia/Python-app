@@ -32,9 +32,9 @@ class User:
             return Result.failure(password_result._error)
 
         user = User(
-            username=username_result._value,
-            password_hash=password_result._value,
-            role=role,
+            username = username_result._value,
+            password_hash = password_result._value,
+            role = role,
         )
         return Result.success(user)
 
