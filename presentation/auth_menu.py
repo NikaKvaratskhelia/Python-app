@@ -1,8 +1,8 @@
 from core.database import get_db
 from domain.aggregates.user.validators.user_validators import UserValidator
 from services.auth_service import AuthService
-from core.jwt_manager import create_access_token
-from core.session_storage import save_session
+from infrastructure.security.jwt_manager import create_access_token
+from infrastructure.security.session_storage import save_session
 from core.helpers import clear_console, get_masked_password
 
 

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from infrastructure.persistence.repositories.user_repository import UserRepository
-from core.security import hash_password, verify_password
+from infrastructure.security.security import hash_password, verify_password
 from core.result import Result
 from domain.aggregates.user import User
 

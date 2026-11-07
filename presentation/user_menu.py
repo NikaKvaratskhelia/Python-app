@@ -1,4 +1,4 @@
-from core.session_storage import clear_session
+from infrastructure.security.session_storage import clear_session
 from core.helpers import clear_console
 from presentation.wallet_menu import wallet_menu
 

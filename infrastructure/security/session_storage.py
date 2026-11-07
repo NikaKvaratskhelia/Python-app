@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from core.jwt_manager import decode_access_token
+from infrastructure.security.jwt_manager import decode_access_token
 
 SESSION_FILE = Path(".session.json")
 
