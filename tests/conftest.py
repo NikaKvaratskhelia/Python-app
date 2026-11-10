@@ -6,6 +6,7 @@ import infrastructure.persistence.models.user_model
 import infrastructure.persistence.models.wallet_model
 import infrastructure.persistence.models.wallet_asset
 import infrastructure.persistence.models.transaction_model
+import infrastructure.persistence.models.order_model
 
 
 @pytest.fixture
