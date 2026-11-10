@@ -24,17 +24,17 @@ class User:
         username_result = UserValidator.validate_username(username)
 
         if username_result.is_failure:
-            return Result.failure(username_result._error)
+            return Result.failure(username_result.error)
 
         password_result = UserValidator.validate_password_hash(password_hash)
 
         if password_result.is_failure:
-            return Result.failure(password_result._error)
+            return Result.failure(password_result.error)
 
         user = User(
-            username = username_result._value,
-            password_hash = password_result._value,
-            role = role,
+            username=username_result.value,
+            password_hash=password_result.value,
+            role=role,
         )
         return Result.success(user)
 
