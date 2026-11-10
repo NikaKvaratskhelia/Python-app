@@ -32,7 +32,7 @@ class AuthService:
         if domain_result.is_failure:
             return Result.failure(domain_result.error)
 
-        user = domain_result._value
+        user = domain_result.value
 
         user.password_hash = hash_password(raw_password)
         if role:
