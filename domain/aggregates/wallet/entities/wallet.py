@@ -21,8 +21,10 @@ class Wallet:
     def withdraw(self, amount: Decimal) -> None:
         if amount <= 0:
             raise ValueError("გასატანი თანხა უნდა იყოს 0-ზე მეტი.")
+        
         if self.fiat_balance < amount:
             raise ValueError("არასაკმარისი ფიატ ბალანსი საფულეში.")
+        
         self.fiat_balance -= amount
 
     def buy_asset(self, symbol: str, amount: Decimal, price: Decimal) -> None:
