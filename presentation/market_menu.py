@@ -2,6 +2,7 @@ from decimal import Decimal
 from core.database import get_db
 from services.market_service import MarketService
 from services.wallet_service import WalletService
+from core.result import Result
 
 
 def market_menu(user_id: int, username: str):
@@ -42,81 +43,89 @@ def market_menu(user_id: int, username: str):
                 count += 1
 
         elif choice == "2":
+            symbol = (
+                input("შეიყვანეთ კრიპტოვალუტის სიმბოლო (მაგ: BTC, ETH, SOL): ")
+                .strip()
+                .upper()
+            )
 
-            try:
-                symbol = (
-                    input("შეიყვანეთ კრიპტოვალუტის სიმბოლო (მაგ: BTC, ETH, SOL): ")
-                    .strip()
-                    .upper()
+            print(f"🔄 მიმდინარეობს {symbol} მონაცემების წამოღება...")
+
+            market_info = MarketService.get_market_stats(symbol)
+
+            if not market_info:
+                print(f"სიმბოლო '{symbol}' ვერ მოიძებნა ბაზარზე.")
+                continue
+
+            live_price = market_info["price"]
+            change = market_info["price_change_percent"]
+            sign = "+" if change >= 0 else ""
+
+            print(f"\nაქტივი: {symbol}")
+            print(f"მიმდინარე ფასი: ${live_price:,.2f}")
+            print(f"24სთ ცვლილება: {sign}{change}%")
+
+            confirm = input(f"\nგსურთ {symbol}-ის ყიდვა? (y/n): ").strip().lower()
+
+            if confirm == "y":
+                amount_str = input(f"რაოდენობა ({symbol}): ").strip()
+                parse_result = Result.try_catch(
+                    lambda: Decimal(amount_str), lambda _: "არასწორი რაოდენობის ფორმატი."
                 )
-
-                print(f"🔄 მიმდინარეობს {symbol} მონაცემების წამოღება...")
-
-                market_info = MarketService.get_market_stats(symbol)
-
-                if not market_info:
-                    print(f"სიმბოლო '{symbol}' ვერ მოიძებნა ბაზარზე.")
-
+                if parse_result.is_failure:
+                    print(f"შეცდომა: {parse_result.error}")
                     continue
-
-                live_price = market_info["price"]
-                change = market_info["price_change_percent"]
-                sign = "+" if change >= 0 else ""
-
-                print(f"\nაქტივი: {symbol}")
-                print(f"მიმდინარე ფასი: ${live_price:,.2f}")
-                print(f"24სთ ცვლილება: {sign}{change}%")
-
-                confirm = input(f"\nგსურთ {symbol}-ის ყიდვა? (y/n): ").strip().lower()
-
-                if confirm == "y":
-
-                    amount_str = input(f"რაოდენობა ({symbol}): ").strip()
-                    amount = Decimal(amount_str)
-
-                    with get_db() as db:
-                        service = WalletService(db)
-                        service.buy_asset(user_id, symbol, amount, live_price)
-
-                    print(
-                        f"წარმატებით იყიდეთ {amount} {symbol} (${live_price:,.2f}-იანი ფასით)!"
-                    )
-
-            except Exception as e:
-                print(f"შეცდომა: {e}")
-
-        elif choice == "3":
-
-            try:
-                symbol = (
-                    input("კრიპტოვალუტის სიმბოლო გასაყიდად (მაგ: BTC, ETH): ")
-                    .strip()
-                    .upper()
-                )
-
-                live_price = MarketService.get_crypto_price(symbol)
-
-                if not live_price:
-                    print(f"ვეღარ მოიძებნა ფასი სიმბოლოსთვის {symbol}.")
-
-                    continue
-
-                print(f"მიმდინარე საბაზრო ფასი: ${live_price:,.2f}")
-
-                amount = Decimal(
-                    input(f"რაოდენობა რამდენი გსურთ გაყიდვა ({symbol}): ").strip()
-                )
 
                 with get_db() as db:
                     service = WalletService(db)
-                    service.sell_asset(user_id, symbol, amount, live_price)
+                    buy_result = service.buy_asset(
+                        user_id, symbol, parse_result.value, live_price
+                    )
 
-                print(
-                    f"წარმატებით გაყიდეთ {amount} {symbol} (${live_price:,.2f}-იანი ფასით)!"
+                if buy_result.is_success:
+                    print(
+                        f"წარმატებით იყიდეთ {parse_result.value} {symbol} (${live_price:,.2f}-იანი ფასით)!"
+                    )
+                else:
+                    print(f"შეცდომა: {buy_result.error}")
+
+        elif choice == "3":
+            symbol = (
+                input("კრიპტოვალუტის სიმბოლო გასაყიდად (მაგ: BTC, ETH): ")
+                .strip()
+                .upper()
+            )
+
+            live_price = MarketService.get_crypto_price(symbol)
+
+            if not live_price:
+                print(f"ვეღარ მოიძებნა ფასი სიმბოლოსთვის {symbol}.")
+                continue
+
+            print(f"მიმდინარე საბაზრო ფასი: ${live_price:,.2f}")
+
+            amount_str = input(
+                f"რაოდენობა რამდენი გსურთ გაყიდვა ({symbol}): "
+            ).strip()
+            parse_result = Result.try_catch(
+                lambda: Decimal(amount_str), lambda _: "არასწორი რაოდენობის ფორმატი."
+            )
+            if parse_result.is_failure:
+                print(f"შეცდომა: {parse_result.error}")
+                continue
+
+            with get_db() as db:
+                service = WalletService(db)
+                sell_result = service.sell_asset(
+                    user_id, symbol, parse_result.value, live_price
                 )
 
-            except Exception as e:
-                print(f"შეცდომა: {e}")
+            if sell_result.is_success:
+                print(
+                    f"წარმატებით გაყიდეთ {parse_result.value} {symbol} (${live_price:,.2f}-იანი ფასით)!"
+                )
+            else:
+                print(f"შეცდომა: {sell_result.error}")
 
         elif choice == "0":
             break

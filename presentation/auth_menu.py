@@ -27,7 +27,7 @@ def run_auth_menu():
                 result = UserValidator.validate_username(username)
 
                 if not result.is_success:
-                    print(result._error)
+                    print(result.error)
                     continue
 
                 break
@@ -38,7 +38,7 @@ def run_auth_menu():
                 result = UserValidator.validate_password(password)
 
                 if not result.is_success:
-                    print(result._error)
+                    print(result.error)
                     continue
 
                 break
@@ -49,9 +49,9 @@ def run_auth_menu():
 
                 if result.is_success:
                     clear_console()
-                    print(f"რეგისტრაცია წარმატებულია: {result._value.username}")
+                    print(f"რეგისტრაცია წარმატებულია: {result.value.username}")
                 else:
-                    print(result._error)
+                    print(result.error)
 
         elif choice == "2":
             clear_console()
@@ -65,7 +65,7 @@ def run_auth_menu():
                 result = auth_service.login(username, password)
 
                 if result.is_success:
-                    user = result._value
+                    user = result.value
                     token = create_access_token(
                         user_id=user.id, username=user.username, role=user.role.value
                     )
@@ -82,7 +82,7 @@ def run_auth_menu():
                     print(f"ლოგინი წარმატებულია! გამარჯობა {user.username}.")
                     break
                 else:
-                    print(result._error)
+                    print(result.error)
 
         elif choice == "3":
             clear_console()

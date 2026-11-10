@@ -7,7 +7,7 @@ from presentation.market_menu import market_menu
 def run_user_menu(session_data: dict):
     clear_console()
 
-    user_id = session_data.get("id")
+    user_id = session_data.get("user_id")
     username = session_data.get("username")
 
     while True:
@@ -28,7 +28,6 @@ def run_user_menu(session_data: dict):
         elif choice == "2":
             clear_console()
             if not user_id:
-
                 print("შეცდომა: სესიაში ვერ მოიძებნა იუზერის ID.")
                 continue
 
