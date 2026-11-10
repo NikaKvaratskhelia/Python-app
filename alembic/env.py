@@ -7,6 +7,11 @@ from core.database import Base
 from infrastructure.persistence.models.user_model import (
     UserModel,
 )
+from infrastructure.persistence.models.user_model import UserModel
+from infrastructure.persistence.models.wallet_model import WalletModel
+from infrastructure.persistence.models.wallet_asset import WalletAssetModel
+from infrastructure.persistence.models.transaction_model import TransactionModel
+
 
 from core.config import (
     settings,
