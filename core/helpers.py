@@ -32,7 +32,8 @@ def get_masked_password(prompt="Password: "):
                     sys.stdout.write("\b \b")
                     sys.stdout.flush()
             elif ord(char) == 3:
-                raise KeyboardInterrupt
+                sys.stdout.write("\r\n")
+                return ""
             else:
                 password.append(char)
                 sys.stdout.write("*")
