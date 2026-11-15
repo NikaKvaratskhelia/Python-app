@@ -109,9 +109,9 @@ class OrderBotEngine:
                             f"BUY ორდერის შეცდომა (#{order.id}): {res.error}"
                         )
 
-            # SELL LIMIT & TAKE PROFIT: საბაზრო ფასი >= სამიზნე ფასზე
+            # SELL LIMIT: საბაზრო ფასი >= სამიზნე ფასზე
             elif (
-                order.order_type in ("SELL_LIMIT", "TAKE_PROFIT")
+                order.order_type == "SELL_LIMIT"
                 and current_price >= order.target_price
             ):
                 if order.is_reserved:

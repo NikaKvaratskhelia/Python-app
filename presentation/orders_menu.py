@@ -13,8 +13,8 @@ console = Console()
 def order_menu(user_id: int, username: str):
     while True:
         print(f"\n--- ორდერების მართვა და ვაჭრობა ({username}) ---")
-        print("1. ორდერების ნახვა (ფილტრაციით: ALL, PENDING, EXECUTED, CANCELLED)")
-        print("2. ახალი ორდერის შექმნა (BUY_LIMIT, SELL_LIMIT, STOP_LOSS, TAKE_PROFIT)")
+        print("1. ორდერების ნახვა")
+        print("2. ახალი ორდერის შექმნა")
         print("3. ორდერის გაუქმება (Cancel Order)")
         print("0. უკან დაბრუნება")
 
@@ -93,21 +93,15 @@ def order_menu(user_id: int, username: str):
             clear_console()
             print("\nაირჩიეთ ორდერის ტიპი:")
             print("1. BUY_LIMIT   (ყიდვა, როცა საბაზრო ფასი დაეცემა სამიზნე ფასამდე)")
-            print(
-                "2. SELL_LIMIT  (გაყიდვა, როცა საბაზრო ფასი გაიზრდება სამიზნე ფასამდე)"
-            )
+            print("2. SELL_LIMIT  (გაყიდვა, როცა საბაზრო ფასი გაიზრდება სამიზნე ფასამდე)")
             print("3. STOP_LOSS   (დამცავი გაყიდვა, როცა ფასი დაეცემა სამიზნე ფასამდე)")
-            print(
-                "4. TAKE_PROFIT (მოგების დაფიქსირება, როცა ფასი მიაღწევს სამიზნე ფასს)"
-            )
             print("0. უკან დაბრუნება")
 
-            type_choice = input("აირჩიეთ (1-4): ").strip()
+            type_choice = input("აირჩიეთ (1-3): ").strip()
             type_map = {
                 "1": OrderType.BUY_LIMIT.value,
                 "2": OrderType.SELL_LIMIT.value,
                 "3": OrderType.STOP_LOSS.value,
-                "4": OrderType.TAKE_PROFIT.value,
             }
             if type_choice not in type_map:
                 if type_choice != "0":
@@ -174,7 +168,7 @@ def order_menu(user_id: int, username: str):
                     continue
 
                 table = Table(
-                    title="⚠️ თქვენი აქტიური (PENDING) ორდერები",
+                    title="თქვენი აქტიური (PENDING) ორდერები",
                     show_header=True,
                     header_style="bold magenta",
                 )

@@ -61,11 +61,10 @@ class OrderService:
                 )
             wallet.fiat_balance -= required_fiat
 
-        # 2. SELL_LIMIT, STOP_LOSS, TAKE_PROFIT: Reserve crypto asset
+        # 2. SELL_LIMIT, STOP_LOSS: Reserve crypto asset
         elif order_type in (
             OrderType.SELL_LIMIT.value,
             OrderType.STOP_LOSS.value,
-            OrderType.TAKE_PROFIT.value,
         ):
             asset = next((a for a in wallet.assets if a.symbol == symbol), None)
             available_amount = asset.amount if asset else Decimal("0")
@@ -119,7 +118,6 @@ class OrderService:
             elif order.order_type in (
                 OrderType.SELL_LIMIT.value,
                 OrderType.STOP_LOSS.value,
-                OrderType.TAKE_PROFIT.value,
             ):
                 asset = next(
                     (a for a in order.wallet.assets if a.symbol == order.symbol), None
