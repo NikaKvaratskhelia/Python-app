@@ -5,4 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "python_app"
 version = "0.1.0"
-dependencies = ["pydantic", "sqlalchemy", "psycopg2-binary", "rich", "requests"]
+dependencies = [
+    "pydantic",
+    "sqlalchemy",
+    "psycopg2-binary",
+    "rich",
+    "requests",
+    "websockets",
+]
