@@ -89,8 +89,7 @@ class OrderService:
         )
 
         self.db.add(order)
-        self.db.commit()
-        self.db.refresh(order)
+        self.db.flush()
         return Result.success(order)
 
     def cancel_order(self, order_id: int, user_id: int) -> Result[OrderModel, str]:
@@ -141,9 +140,7 @@ class OrderService:
                     self.db.add(new_asset)
 
         order.status = OrderStatus.CANCELLED.value
-        self.db.commit()
-        self.db.refresh(order)
-
+        self.db.flush()
         return Result.success(order)
 
     def get_orders(

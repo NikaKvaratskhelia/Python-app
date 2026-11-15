@@ -210,7 +210,7 @@ class WalletService:
             symbol="USD",
         )
         self.db.add(tx)
-        self.db.commit()
+        self.db.flush()
 
         return Result.success(updated_wallet)
 
@@ -272,7 +272,7 @@ class WalletService:
             
             self.db.add(tx_out)
             self.db.add(tx_in)
-            self.db.commit()
+            self.db.flush()
 
             return Result.success(
                 {
@@ -334,7 +334,7 @@ class WalletService:
             
             self.db.add(tx_out)
             self.db.add(tx_in)
-            self.db.commit()
+            self.db.flush()
 
             return Result.success(
                 {

@@ -99,7 +99,7 @@ class UserService:
             return Result.failure(val_res.error)
 
         user_model.password_hash = hash_password(new_password)
-        self.db.commit()
+        self.db.flush()
 
         return Result.success(None)
 
@@ -125,6 +125,6 @@ class UserService:
             return Result.failure("მომხმარებელი ვერ მოიძებნა.")
 
         user_model.username = new_username
-        self.db.commit()
+        self.db.flush()
 
         return Result.success(new_username)

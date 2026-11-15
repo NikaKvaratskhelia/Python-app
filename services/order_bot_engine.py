@@ -93,7 +93,7 @@ class OrderBotEngine:
                     )
                     db.add(tx)
                     order.status = "EXECUTED"
-                    db.commit()
+                    db.flush()
                     logger.info(
                         f"BUY ორდერი შესრულდა: {symbol} @ ${current_price}"
                     )
@@ -103,7 +103,7 @@ class OrderBotEngine:
                     )
                     if res.is_success:
                         order.status = "EXECUTED"
-                        db.commit()
+                        db.flush()
                         logger.info(
                             f"BUY ორდერი შესრულდა: {symbol} @ ${current_price}"
                         )
@@ -129,7 +129,7 @@ class OrderBotEngine:
                     )
                     db.add(tx)
                     order.status = "EXECUTED"
-                    db.commit()
+                    db.flush()
                     logger.info(
                         f"{order.order_type} ორდერი შესრულდა: {symbol} @ ${current_price}"
                     )
@@ -139,7 +139,7 @@ class OrderBotEngine:
                     )
                     if res.is_success:
                         order.status = "EXECUTED"
-                        db.commit()
+                        db.flush()
                         logger.info(
                             f"{order.order_type} ორდერი შესრულდა: {symbol} @ ${current_price}"
                         )
@@ -165,7 +165,7 @@ class OrderBotEngine:
                     )
                     db.add(tx)
                     order.status = "EXECUTED"
-                    db.commit()
+                    db.flush()
                     logger.info(
                         f"STOP_LOSS ორდერი შესრულდა: {symbol} @ ${current_price}"
                     )
@@ -175,7 +175,7 @@ class OrderBotEngine:
                     )
                     if res.is_success:
                         order.status = "EXECUTED"
-                        db.commit()
+                        db.flush()
                         logger.info(
                             f"STOP_LOSS ორდერი შესრულდა: {symbol} @ ${current_price}"
                         )

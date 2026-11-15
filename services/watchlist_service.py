@@ -25,8 +25,7 @@ class WatchlistService:
 
         item = WatchlistModel(user_id=user_id, symbol=symbol)
         self.db.add(item)
-        self.db.commit()
-        self.db.refresh(item)
+        self.db.flush()
         return Result.success(item)
 
     def remove(self, user_id: int, symbol: str) -> Result[None, str]:
@@ -43,7 +42,7 @@ class WatchlistService:
             return Result.failure(f"{symbol} ვერ მოიძებნა რჩეულებში.")
 
         self.db.delete(item)
-        self.db.commit()
+        self.db.flush()
         return Result.success(None)
 
     def get_watchlist(self, user_id: int) -> list[str]:

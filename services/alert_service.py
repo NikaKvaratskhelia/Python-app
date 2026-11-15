@@ -35,8 +35,7 @@ class AlertService:
             is_triggered=False,
         )
         self.db.add(alert)
-        self.db.commit()
-        self.db.refresh(alert)
+        self.db.flush()
         return Result.success(alert)
 
     def get_user_alerts(
@@ -61,7 +60,7 @@ class AlertService:
             return Result.failure("შეტყობინება ვერ მოიძებნა.")
 
         self.db.delete(alert)
-        self.db.commit()
+        self.db.flush()
         return Result.success(None)
 
     @staticmethod
@@ -93,6 +92,6 @@ class AlertService:
                 triggered.append(alert)
 
         if triggered:
-            db.commit()
+            db.flush()
 
         return triggered
