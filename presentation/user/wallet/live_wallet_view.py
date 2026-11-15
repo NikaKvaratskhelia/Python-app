@@ -7,6 +7,7 @@ from rich.live import Live
 from rich.table import Table
 from rich.panel import Panel
 from core.database import get_db
+from core.helpers import clear_console
 from infrastructure.persistence.models.order_model import OrderModel
 from infrastructure.persistence.models.transaction_model import TransactionModel
 from services.wallet_service import WalletService

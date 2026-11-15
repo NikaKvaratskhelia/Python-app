@@ -5,6 +5,7 @@ from rich.console import Console
 from rich.live import Live
 from rich.table import Table
 from core.database import get_db
+from core.helpers import clear_console
 from services.user_service import UserService
 
 console = Console()

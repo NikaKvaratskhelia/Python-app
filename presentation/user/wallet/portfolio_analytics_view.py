@@ -7,6 +7,7 @@ from rich.live import Live
 from rich.table import Table
 from rich.panel import Panel
 from core.database import get_db
+from core.helpers import clear_console
 from infrastructure.persistence.models.wallet_model import WalletModel
 from services.binance_ws import BinanceWSManager
 

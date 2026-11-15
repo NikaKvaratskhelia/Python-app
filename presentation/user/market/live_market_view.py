@@ -7,6 +7,7 @@ from rich.console import Console
 from rich.live import Live
 from rich.table import Table
 from rich.panel import Panel
+from core.helpers import clear_console
 from services.binance_ws import BinanceWSManager
 from services.market_service import MarketService
 
