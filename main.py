@@ -1,10 +1,11 @@
 import threading
 from infrastructure.security.session_storage import get_session
-from presentation.auth_menu import run_auth_menu
-from presentation.user_menu import run_user_menu
-from presentation.admin_menu import run_admin_menu
+from presentation.auth.auth_menu import run_auth_menu
+from presentation.user.user_menu import run_user_menu
+from presentation.admin.admin_menu import run_admin_menu
 from core.helpers import clear_console
 from services.order_bot_engine import OrderBotEngine
+from services.binance_ws import BinanceWSManager
 
 
 def start_background_bot():
@@ -18,6 +19,7 @@ def start_background_bot():
 def main():
     bot_thread = threading.Thread(target=start_background_bot, daemon=True)
     bot_thread.start()
+    BinanceWSManager.start()
 
     clear_console()
     print("აპლიკაცია ჩაირთო!")
@@ -35,6 +37,7 @@ def main():
 
             if action == "exit":
                 OrderBotEngine.stop()
+                BinanceWSManager.stop()
                 break
         else:
             clear_console()
@@ -52,6 +55,7 @@ def main():
                 print("ნახვამდის!")
                 break
             else:
+                clear_console()
                 print("არასწორი არჩევანი.")
 
 

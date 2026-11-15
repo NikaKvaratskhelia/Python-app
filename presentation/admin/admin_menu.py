@@ -1,0 +1,35 @@
+from infrastructure.security.session_storage import clear_session
+from core.helpers import clear_console
+
+
+def run_admin_menu(session_data: dict):
+    clear_console()
+
+    while True:
+        print(f"\n--- ადმინისტრატორის პანელი ({session_data.get('username')}) ---")
+        print("1. ყველა მომხმარებლის მართვა")
+        print("2. სისტემური პარამეტრები")
+        print("3. სისტემიდან გამოსვლა (Logout)")
+        print("0. აპლიკაციიდან გასვლა (Exit)")
+
+        choice = input("აირჩიე (0-3): ").strip()
+
+        if choice == "1":
+            clear_console()
+            print("აქ იქნება იუზერების სია და მართვა.")
+        elif choice == "2":
+            clear_console()
+            print("სისტემური პარამეტრები...")
+        elif choice == "3":
+            clear_console()
+            clear_session()
+            print("გამოხვედით სისტემიდან.")
+            return "logout"
+
+        elif choice == "0":
+            clear_console()
+            print("ნახვამდის!")
+            return "exit"
+        else:
+            clear_console()
+            print("არასწორი არჩევანი.")
