@@ -48,3 +48,6 @@ def run_transfer_menu(user_id: int):
         )
     else:
         console.print(f"[red]შეცდომა: {transfer_res.error}[/red]")
+
+    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
+    clear_console()

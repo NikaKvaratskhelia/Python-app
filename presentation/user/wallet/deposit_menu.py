@@ -29,3 +29,6 @@ def run_deposit_menu(user_id: int):
         console.print("[green]დეპოზიტი წარმატებით განთავსდა![/green]")
     else:
         console.print(f"[red]შეცდომა: {result.error}[/red]")
+
+    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
+    clear_console()

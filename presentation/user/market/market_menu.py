@@ -10,6 +10,7 @@ from presentation.user.market.movers.top_movers_view import show_live_top_movers
 def market_menu(user_id: int, username: str):
     user_id = int(user_id)
     while True:
+        clear_console()
         print(f"\n--- კრიპტო ბაზარი და ვაჭრობა ({username}) ---")
         print("1. კრიპტოვალუტის ფასები (LIVE სტრიმი)")
         print("2. კონკრეტული კრიპტოვალუტის ძებნა და ყიდვა (LIVE პრევიუ)")

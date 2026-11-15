@@ -15,6 +15,8 @@ def run_transactions_menu(user_id: int):
 
         if not wallet.transactions:
             console.print("  [dim](ტრანზაქციების ისტორია ცარიელია)[/dim]")
+            input("\nდააჭირეთ Enter-ს უკან დასაბრუნებლად...")
+            clear_console()
             return
 
         table = Table(
@@ -70,3 +72,6 @@ def run_transactions_menu(user_id: int):
                 console.print(
                     f"[red]შეცდომა ექსპორტისას: {export_res.error}[/red]"
                 )
+
+        input("\nდააჭირეთ Enter-ს უკან დასაბრუნებლად...")
+        clear_console()

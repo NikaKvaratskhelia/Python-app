@@ -39,6 +39,8 @@ def run_view_orders_menu(user_id: int):
     status_filter = filter_map.get(f_choice, None)
     title_suffix = f" [{status_filter}]" if status_filter else " [ყველა]"
 
+    clear_console()
+
     console.print(
         f"\n[bold cyan]ორდერების სია{title_suffix} (LIVE განახლება)[/bold cyan]"
     )
@@ -129,4 +131,5 @@ def run_view_orders_menu(user_id: int):
                     break
     except KeyboardInterrupt:
         pass
+    clear_console()
     console.print("\n[yellow]ორდერების მონიტორინგი შეჩერდა.[/yellow]")

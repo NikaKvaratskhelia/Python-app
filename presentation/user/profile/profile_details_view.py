@@ -38,3 +38,5 @@ def show_profile_details(user_id: int):
         table.add_row("რეგისტრაციის თარიღი", date_str)
 
         console.print(table)
+        input("\nდააჭირეთ Enter-ს უკან დასაბრუნებლად...")
+        clear_console()

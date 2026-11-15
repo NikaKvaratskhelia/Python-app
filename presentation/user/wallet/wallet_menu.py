@@ -10,6 +10,7 @@ from presentation.user.wallet.portfolio_analytics_view import show_live_portfoli
 def wallet_menu(user_id: int, username: str):
     user_id = int(user_id)
     while True:
+        clear_console()
         print(f"\n--- ჩემი საფულე ({username}) ---")
         print("1. ბალანსისა და აქტივების ნახვა (LIVE სტრიმი)")
         print("2. დეპოზიტი (თანხის შეტანა)")

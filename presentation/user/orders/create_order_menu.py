@@ -92,3 +92,6 @@ def run_create_order_menu(user_id: int):
         )
     else:
         console.print(f"\n[red]შეცდომა: {create_res.error}[/red]")
+
+    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
+    clear_console()

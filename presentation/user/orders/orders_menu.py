@@ -8,6 +8,7 @@ def order_menu(user_id: int, username: str):
     user_id = int(user_id)
 
     while True:
+        clear_console()
         print(f"\n--- ორდერების მართვა და ვაჭრობა ({username}) ---")
 
         print("1. ორდერების ნახვა (LIVE ბაზრის მონიტორინგი)")

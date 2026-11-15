@@ -15,6 +15,7 @@ def run_user_menu(session_data: dict):
     user_id = int(raw_user_id) if raw_user_id is not None else None
 
     while True:
+        clear_console()
         username = session_data.get("username")
 
         if user_id:

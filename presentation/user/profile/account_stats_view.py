@@ -65,4 +65,5 @@ def show_live_account_stats(user_id: int):
     except KeyboardInterrupt:
         pass
 
+    clear_console()
     console.print("\n[yellow]სტატისტიკის მონიტორინგი შეჩერდა.[/yellow]")

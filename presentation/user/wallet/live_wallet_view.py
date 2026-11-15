@@ -222,4 +222,5 @@ def run_live_wallet_view(user_id: int, username: str):
                     break
     except KeyboardInterrupt:
         pass
+    clear_console()
     console.print("\n[yellow]LIVE საფულის მონიტორინგი შეჩერდა.[/yellow]")

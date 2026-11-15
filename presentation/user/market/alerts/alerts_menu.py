@@ -19,6 +19,7 @@ def alerts_menu(user_id: int):
     clear_console()
 
     def show_live_alerts_stream():
+        clear_console()
         console.print("\n[bold cyan]ფასის შეტყობინებები (LIVE სტრიმი & მონიტორინგი)[/bold cyan]")
         console.print("[dim]მენიუზე გადასასვლელად დააჭირეთ [Enter] ან [Ctrl+C]...[/dim]\n")
 
@@ -89,11 +90,13 @@ def alerts_menu(user_id: int):
                         break
         except KeyboardInterrupt:
             pass
+        clear_console()
 
     # First show live alerts stream
     show_live_alerts_stream()
 
     while True:
+        clear_console()
         print("\n--- შეტყობინებების მართვა ---")
         print("1. შეტყობინებების LIVE სტრიმი")
         print("2. ახალი შეტყობინების დამატება")

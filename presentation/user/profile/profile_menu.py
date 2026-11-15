@@ -9,6 +9,7 @@ def profile_menu(session_data: dict) -> dict:
     user_id = int(session_data.get("user_id"))
 
     while True:
+        clear_console()
         username = session_data.get("username")
 
         print(f"\n--- პროფილის მართვა ({username}) ---")

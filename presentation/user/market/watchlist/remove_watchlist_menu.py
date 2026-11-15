@@ -1,11 +1,13 @@
 from rich.console import Console
 from core.database import get_db
+from core.helpers import clear_console
 from services.watchlist_service import WatchlistService
 
 console = Console()
 
 
 def run_remove_watchlist_menu(user_id: int):
+    clear_console()
     del_sym = input("შეიყვანეთ ამოსაშლელი სიმბოლო: ").strip().upper()
     if not del_sym:
         return
@@ -18,3 +20,6 @@ def run_remove_watchlist_menu(user_id: int):
         console.print(f"[green]{del_sym} ამოიშალა რჩეულებიდან.[/green]")
     else:
         console.print(f"[red]შეცდომა: {del_res.error}[/red]")
+
+    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
+    clear_console()

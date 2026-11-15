@@ -45,3 +45,6 @@ def run_buy_menu(user_id: int):
         )
     else:
         console.print(f"[red]შეცდომა: {buy_result.error}[/red]")
+
+    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
+    clear_console()

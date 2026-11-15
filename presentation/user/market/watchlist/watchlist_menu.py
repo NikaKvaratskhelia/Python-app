@@ -26,6 +26,7 @@ def watchlist_menu(user_id: int):
         console.print("[dim]რჩეულებში მონეტები ჯერ არ გაქვთ დამატებული.[/dim]")
 
     while True:
+        clear_console()
         with get_db() as db:
             w_svc = WatchlistService(db)
             current_symbols = w_svc.get_watchlist(user_id)

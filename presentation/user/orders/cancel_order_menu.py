@@ -17,6 +17,8 @@ def run_cancel_order_menu(user_id: int):
 
         if not pending_orders:
             console.print("\n[yellow]აქტიური (PENDING) ორდერები არ გაქვთ.[/yellow]")
+            input("\nდააჭირეთ Enter-ს უკან დასაბრუნებლად...")
+            clear_console()
             return
 
         table = Table(
@@ -74,3 +76,6 @@ def run_cancel_order_menu(user_id: int):
             console.print("[dim]დარეზერვებული თანხა/აქტივი დაგიბრუნდათ საფულეში.[/dim]")
         else:
             console.print(f"\n[red]შეცდომა: {cancel_res.error}[/red]")
+
+        input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
+        clear_console()

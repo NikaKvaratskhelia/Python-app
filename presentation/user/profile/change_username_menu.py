@@ -23,11 +23,13 @@ def run_change_username_menu(session_data: dict) -> dict:
         res = user_svc.change_username(user_id, new_uname)
 
     if res.is_success:
-        session_data["username"] = res.value.username
+        session_data["username"] = res.value
         console.print(
-            f"[green]Username წარმატებით შეიცვალა: {res.value.username}![/green]"
+            f"[green]Username წარმატებით შეიცვალა: {res.value}![/green]"
         )
     else:
         console.print(f"[red]შეცდომა: {res.error}[/red]")
 
+    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
+    clear_console()
     return session_data

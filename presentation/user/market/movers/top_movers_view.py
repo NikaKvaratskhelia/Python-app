@@ -88,4 +88,5 @@ def show_live_top_movers(limit: int = 5):
                     break
     except KeyboardInterrupt:
         pass
+    clear_console()
     console.print("\n[yellow]ტოპ ლიდერების მონიტორინგი შეჩერდა.[/yellow]")

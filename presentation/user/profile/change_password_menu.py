@@ -31,3 +31,6 @@ def run_change_password_menu(user_id: int):
         console.print("[green]პაროლი წარმატებით შეიცვალა![/green]")
     else:
         console.print(f"[red]შეცდომა: {res.error}[/red]")
+
+    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
+    clear_console()

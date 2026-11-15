@@ -86,6 +86,7 @@ def run_live_market_view(
                     break
     except KeyboardInterrupt:
         pass
+    clear_console()
     console.print("\n[yellow]LIVE სტრიმი შეჩერდა.[/yellow]")
 
 

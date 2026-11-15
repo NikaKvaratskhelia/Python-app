@@ -1,11 +1,13 @@
 from rich.console import Console
 from core.database import get_db
+from core.helpers import clear_console
 from services.watchlist_service import WatchlistService
 
 console = Console()
 
 
 def run_add_watchlist_menu(user_id: int):
+    clear_console()
     new_sym = (
         input("შეიყვანეთ კრიპტოვალუტის სიმბოლო (მაგ: SOL, BTC): ")
         .strip()
@@ -22,3 +24,6 @@ def run_add_watchlist_menu(user_id: int):
         console.print(f"[green]{new_sym} წარმატებით დაემატა რჩეულებში![/green]")
     else:
         console.print(f"[red]შეცდომა: {add_res.error}[/red]")
+
+    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
+    clear_console()

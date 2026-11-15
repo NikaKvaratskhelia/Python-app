@@ -135,4 +135,5 @@ def show_live_portfolio_analytics(user_id: int):
                     break
     except KeyboardInterrupt:
         pass
+    clear_console()
     console.print("\n[yellow]ანალიტიკის მონიტორინგი შეჩერდა.[/yellow]")

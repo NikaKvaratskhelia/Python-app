@@ -10,6 +10,7 @@ def run_auth_menu():
     clear_console()
 
     while True:
+        clear_console()
         print("\n--- ავტორიზაციის მენიუ ---")
         print("1. რეგისტრაცია")
         print("2. ლოგინი")
@@ -50,8 +51,11 @@ def run_auth_menu():
                 if result.is_success:
                     clear_console()
                     print(f"რეგისტრაცია წარმატებულია: {result.value.username}")
+                    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
                 else:
                     print(result.error)
+                    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
+                    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
 
         elif choice == "2":
             clear_console()
@@ -84,6 +88,7 @@ def run_auth_menu():
                     break
                 else:
                     print(result.error)
+                    input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
 
         elif choice == "3":
             clear_console()
