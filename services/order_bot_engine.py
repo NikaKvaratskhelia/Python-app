@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 from core.database import get_db
 from services.market_service import MarketService
 from services.wallet_service import WalletService
+from services.alert_service import AlertService
 from infrastructure.persistence.models.order_model import OrderModel
 from infrastructure.persistence.models.wallet_model import WalletModel
 from infrastructure.persistence.models.wallet_asset import WalletAssetModel
@@ -43,6 +44,8 @@ class OrderBotEngine:
         market_prices = MarketService.get_all_active_prices()
         if not market_prices:
             return
+
+        AlertService.check_and_trigger_alerts(db, market_prices)
 
         wallet_service = WalletService(db)
 
