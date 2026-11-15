@@ -21,13 +21,37 @@ class UserRepository:
             created_at=model.created_at,
         )
 
+    def get_by_id(self, user_id: int) -> User | None:
+        model = self.db.query(UserModel).filter(UserModel.id == user_id).first()
+
+        if not model:
+            return None
+
+        return User(
+            id=model.id,
+            username=model.username,
+            password_hash=model.password_hash,
+            role=model.role,
+            created_at=model.created_at,
+        )
+
     def save(self, user: User) -> User:
+        if user.id:
+            model = self.db.query(UserModel).filter(UserModel.id == user.id).first()
+            if model:
+                model.username = user.username
+                model.password_hash = user.password_hash
+                model.role = user.role
+                self.db.flush()
+                return user
+
         model = UserModel(
             username=user.username,
             password_hash=user.password_hash,
             role=user.role,
             created_at=user.created_at,
         )
-        
         self.db.add(model)
+        self.db.flush()
+        user.id = model.id
         return user
