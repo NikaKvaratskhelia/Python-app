@@ -17,36 +17,38 @@ def wallet_menu(user_id: int, username: str):
 
         if choice == "1":
             clear_console()
+            print("\nმიმდინარეობს მონაცემების ჩატვირთვა...")
             with get_db() as db:
                 service = WalletService(db)
                 summary = service.get_portfolio_summary(user_id)
 
-                print(f"\nბალანსი: ${summary['fiat_balance']:,.2f}")
+            clear_console()
+            print(f"\nბალანსი: ${summary['fiat_balance']:,.2f}")
 
+            print(
+                f"კრიპტო აქტივების ღირებულება: ${summary['total_crypto_value']:,.2f}"
+            )
+
+            print("\n")
+
+            print(
+                f"**პორტფოლიოს ჯამური ღირებულება: ${summary['total_portfolio_value']:,.2f}**"
+            )
+
+            print("\nაქტივები და PnL (მოგება/ზარალი):")
+
+            if not summary["assets"]:
+                print("  (აქტივები არ გაქვთ)")
+
+            for item in summary["assets"]:
+                pnl_sign = "+" if item["pnl_usd"] >= 0 else ""
                 print(
-                    f"კრიპტო აქტივების ღირებულება: ${summary['total_crypto_value']:,.2f}"
+                    f"  - {item['symbol']}: {item['amount']}\n"
+                    f"    ფასი: ${item['current_price']:,.2f} | ღირებულება: ${item['current_value']:,.2f}\n"
+                    f"    საშ. ყიდვა: ${item['average_buy_price']:,.2f}\n"
+                    f"    PnL: {pnl_sign}${item['pnl_usd']:,.2f} ({pnl_sign}{item['pnl_percent']:.2f}%)"
                 )
-
-                print("\n")
-
-                print(
-                    f"**პორტფოლიოს ჯამური ღირებულება: ${summary['total_portfolio_value']:,.2f}**"
-                )
-
-                print("\nაქტივები და PnL (მოგება/ზარალი):")
-
-                if not summary["assets"]:
-                    print("  (აქტივები არ გაქვთ)")
-
-                for item in summary["assets"]:
-                    pnl_sign = "+" if item["pnl_usd"] >= 0 else ""
-                    print(
-                        f"  - {item['symbol']}: {item['amount']}\n"
-                        f"    ფასი: ${item['current_price']:,.2f} | ღირებულება: ${item['current_value']:,.2f}\n"
-                        f"    საშ. ყიდვა: ${item['average_buy_price']:,.2f}\n"
-                        f"    PnL: {pnl_sign}${item['pnl_usd']:,.2f} ({pnl_sign}{item['pnl_percent']:.2f}%)"
-                    )
-                    print("-" * 40)
+                print("-" * 40)
 
         elif choice == "2":
             clear_console()

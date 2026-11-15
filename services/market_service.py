@@ -2,8 +2,6 @@ import requests
 from decimal import Decimal
 from typing import Optional, Dict, Any
 
-from core.helpers import clear_console
-
 
 class MarketService:
     PRICE_URL = "https://api.binance.com/api/v3/ticker/price"
@@ -28,9 +26,7 @@ class MarketService:
                 return Decimal(str(data["price"]))
 
         except requests.exceptions.RequestException as e:
-            print(f"❌ ქსელური შეცდომა: {e}")
-        finally:
-            clear_console()
+            print(f"ქსელური შეცდომა: {e}")
 
         return None
 
@@ -64,8 +60,6 @@ class MarketService:
 
         except requests.exceptions.RequestException as e:
             print(f"ქსელური შეცდომა საბაზრო სტატისტიკის წამოღებისას: {e}")
-        finally:
-            clear_console()
 
         return None
 
@@ -99,8 +93,5 @@ class MarketService:
 
         except requests.exceptions.RequestException as e:
             print(f"ვეღარ მოხერხდა ბაზრის მონაცემების მიღება: {e}")
-
-        finally:
-            clear_console()
 
         return {}

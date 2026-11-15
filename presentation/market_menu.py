@@ -22,6 +22,7 @@ def market_menu(user_id: int, username: str):
             print("\nმიმდინარეობს ბაზრის მონაცემების წამოღება...")
 
             market_data = MarketService.get_all_active_prices()
+            clear_console()
 
             if not market_data:
                 print("ვეღარ მოხერხდა ბაზრის მონაცემების მიღება.")
@@ -56,6 +57,7 @@ def market_menu(user_id: int, username: str):
             print(f"მიმდინარეობს {symbol} მონაცემების წამოღება...")
 
             market_info = MarketService.get_market_stats(symbol)
+            clear_console()
 
             if not market_info:
                 print(f"სიმბოლო '{symbol}' ვერ მოიძებნა ბაზარზე.")
