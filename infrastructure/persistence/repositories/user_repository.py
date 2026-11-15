@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from infrastructure.persistence.models.user_model import UserModel
 from domain.aggregates.user import User
+from core.database import get_db
 
 
 class UserRepository:
@@ -36,22 +37,22 @@ class UserRepository:
         )
 
     def save(self, user: User) -> User:
-        if user.id:
-            model = self.db.query(UserModel).filter(UserModel.id == user.id).first()
-            if model:
-                model.username = user.username
-                model.password_hash = user.password_hash
-                model.role = user.role
-                self.db.flush()
-                return user
+        with get_db(self.db) as db:
+            if user.id:
+                model = db.query(UserModel).filter(UserModel.id == user.id).first()
+                if model:
+                    model.username = user.username
+                    model.password_hash = user.password_hash
+                    model.role = user.role
+                    return user
 
-        model = UserModel(
-            username=user.username,
-            password_hash=user.password_hash,
-            role=user.role,
-            created_at=user.created_at,
-        )
-        self.db.add(model)
-        self.db.flush()
+            model = UserModel(
+                username=user.username,
+                password_hash=user.password_hash,
+                role=user.role,
+                created_at=user.created_at,
+            )
+            db.add(model)
+
         user.id = model.id
         return user

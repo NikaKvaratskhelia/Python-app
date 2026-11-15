@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import Optional, List
 from sqlalchemy.orm import Session
+from core.database import get_db
 from core.result import Result
 from infrastructure.persistence.models.price_alert_model import PriceAlertModel
 
@@ -34,8 +35,8 @@ class AlertService:
             condition=condition,
             is_triggered=False,
         )
-        self.db.add(alert)
-        self.db.flush()
+        with get_db(self.db) as db:
+            db.add(alert)
         return Result.success(alert)
 
     def get_user_alerts(
@@ -49,49 +50,47 @@ class AlertService:
         return query.order_by(PriceAlertModel.id.desc()).all()
 
     def delete_alert(self, alert_id: int, user_id: int) -> Result[None, str]:
-        alert = (
-            self.db.query(PriceAlertModel)
-            .filter(
-                PriceAlertModel.id == alert_id, PriceAlertModel.user_id == user_id
+        with get_db(self.db) as db:
+            alert = (
+                db.query(PriceAlertModel)
+                .filter(
+                    PriceAlertModel.id == alert_id, PriceAlertModel.user_id == user_id
+                )
+                .first()
             )
-            .first()
-        )
-        if not alert:
-            return Result.failure("შეტყობინება ვერ მოიძებნა.")
+            if not alert:
+                return Result.failure("შეტყობინება ვერ მოიძებნა.")
 
-        self.db.delete(alert)
-        self.db.flush()
+            db.delete(alert)
         return Result.success(None)
 
     @staticmethod
     def check_and_trigger_alerts(
         db: Session, market_prices: dict
     ) -> List[PriceAlertModel]:
-        active_alerts = (
-            db.query(PriceAlertModel)
-            .filter(PriceAlertModel.is_triggered == False)
-            .all()
-        )
-        triggered = []
+        with get_db(db) as session:
+            active_alerts = (
+                session.query(PriceAlertModel)
+                .filter(PriceAlertModel.is_triggered == False)
+                .all()
+            )
+            triggered = []
 
-        for alert in active_alerts:
-            info = market_prices.get(alert.symbol)
-            if not info:
-                continue
+            for alert in active_alerts:
+                info = market_prices.get(alert.symbol)
+                if not info:
+                    continue
 
-            current_price = info["price"]
-            should_trigger = False
+                current_price = info["price"]
+                should_trigger = False
 
-            if alert.condition == "ABOVE" and current_price >= alert.target_price:
-                should_trigger = True
-            elif alert.condition == "BELOW" and current_price <= alert.target_price:
-                should_trigger = True
+                if alert.condition == "ABOVE" and current_price >= alert.target_price:
+                    should_trigger = True
+                elif alert.condition == "BELOW" and current_price <= alert.target_price:
+                    should_trigger = True
 
-            if should_trigger:
-                alert.is_triggered = True
-                triggered.append(alert)
+                if should_trigger:
+                    alert.is_triggered = True
+                    triggered.append(alert)
 
-        if triggered:
-            db.flush()
-
-        return triggered
+            return triggered

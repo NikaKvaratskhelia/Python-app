@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import Optional
 from sqlalchemy.orm import Session
+from core.database import get_db
 from core.result import Result
 from domain.aggregates.user.validators.user_validators import UserValidator
 from infrastructure.persistence.models.user_model import UserModel
@@ -82,24 +83,24 @@ class UserService:
     def change_password(
         self, user_id: int, current_password: str, new_password: str
     ) -> Result[None, str]:
-        user_model = self.db.query(UserModel).filter(UserModel.id == user_id).first()
+        with get_db(self.db) as db:
+            user_model = db.query(UserModel).filter(UserModel.id == user_id).first()
 
-        if not user_model:
-            return Result.failure("მომხმარებელი ვერ მოიძებნა.")
+            if not user_model:
+                return Result.failure("მომხმარებელი ვერ მოიძებნა.")
 
-        if not verify_password(current_password, user_model.password_hash):
-            return Result.failure("მიმდინარე პაროლი არასწორია.")
+            if not verify_password(current_password, user_model.password_hash):
+                return Result.failure("მიმდინარე პაროლი არასწორია.")
 
-        if current_password == new_password:
-            return Result.failure("ახალი პაროლი არ შეიძლება ემთხვეოდეს ძველ პაროლს.")
+            if current_password == new_password:
+                return Result.failure("ახალი პაროლი არ შეიძლება ემთხვეოდეს ძველ პაროლს.")
 
-        val_res = UserValidator.validate_password(new_password)
+            val_res = UserValidator.validate_password(new_password)
 
-        if val_res.is_failure:
-            return Result.failure(val_res.error)
+            if val_res.is_failure:
+                return Result.failure(val_res.error)
 
-        user_model.password_hash = hash_password(new_password)
-        self.db.flush()
+            user_model.password_hash = hash_password(new_password)
 
         return Result.success(None)
 
@@ -110,21 +111,21 @@ class UserService:
         if val_res.is_failure:
             return Result.failure(val_res.error)
 
-        existing = (
-            self.db.query(UserModel).filter(UserModel.username == new_username).first()
-        )
-
-        if existing and existing.id != user_id:
-            return Result.failure(
-                f"მომხმარებელი სახელით '{new_username}' უკვე არსებობს."
+        with get_db(self.db) as db:
+            existing = (
+                db.query(UserModel).filter(UserModel.username == new_username).first()
             )
 
-        user_model = self.db.query(UserModel).filter(UserModel.id == user_id).first()
+            if existing and existing.id != user_id:
+                return Result.failure(
+                    f"მომხმარებელი სახელით '{new_username}' უკვე არსებობს."
+                )
 
-        if not user_model:
-            return Result.failure("მომხმარებელი ვერ მოიძებნა.")
+            user_model = db.query(UserModel).filter(UserModel.id == user_id).first()
 
-        user_model.username = new_username
-        self.db.flush()
+            if not user_model:
+                return Result.failure("მომხმარებელი ვერ მოიძებნა.")
+
+            user_model.username = new_username
 
         return Result.success(new_username)

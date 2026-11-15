@@ -23,11 +23,8 @@ class OrderBotEngine:
         """
         ამოწმებს PENDING ორდერებს და ადარებს საბაზრო ფასებს ერთ ციკლში.
         """
-        if db is not None:
-            OrderBotEngine._process(db)
-        else:
-            with get_db() as session:
-                OrderBotEngine._process(session)
+        with get_db(db) as session:
+            OrderBotEngine._process(session)
 
     @staticmethod
     def _process(db: Session) -> None:
@@ -93,7 +90,6 @@ class OrderBotEngine:
                     )
                     db.add(tx)
                     order.status = "EXECUTED"
-                    db.flush()
                     logger.info(
                         f"BUY ორდერი შესრულდა: {symbol} @ ${current_price}"
                     )
@@ -103,7 +99,6 @@ class OrderBotEngine:
                     )
                     if res.is_success:
                         order.status = "EXECUTED"
-                        db.flush()
                         logger.info(
                             f"BUY ორდერი შესრულდა: {symbol} @ ${current_price}"
                         )
@@ -129,7 +124,6 @@ class OrderBotEngine:
                     )
                     db.add(tx)
                     order.status = "EXECUTED"
-                    db.flush()
                     logger.info(
                         f"{order.order_type} ორდერი შესრულდა: {symbol} @ ${current_price}"
                     )
@@ -139,7 +133,6 @@ class OrderBotEngine:
                     )
                     if res.is_success:
                         order.status = "EXECUTED"
-                        db.flush()
                         logger.info(
                             f"{order.order_type} ორდერი შესრულდა: {symbol} @ ${current_price}"
                         )
@@ -165,7 +158,6 @@ class OrderBotEngine:
                     )
                     db.add(tx)
                     order.status = "EXECUTED"
-                    db.flush()
                     logger.info(
                         f"STOP_LOSS ორდერი შესრულდა: {symbol} @ ${current_price}"
                     )
@@ -175,7 +167,6 @@ class OrderBotEngine:
                     )
                     if res.is_success:
                         order.status = "EXECUTED"
-                        db.flush()
                         logger.info(
                             f"STOP_LOSS ორდერი შესრულდა: {symbol} @ ${current_price}"
                         )

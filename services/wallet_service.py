@@ -3,6 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 from sqlalchemy.orm import Session
+from core.database import get_db
 from infrastructure.persistence.repositories.wallet_repository import WalletRepository
 from infrastructure.persistence.models.transaction_model import TransactionModel
 from infrastructure.persistence.models.wallet_asset import WalletAssetModel
@@ -41,17 +42,17 @@ class WalletService:
         if deposit_result.is_failure:
             return Result.failure(deposit_result.error)
 
-        updated_wallet = self.wallet_repo.save(wallet)
+        with get_db(self.db) as db:
+            updated_wallet = self.wallet_repo.save(wallet)
 
-        tx = TransactionModel(
-            wallet_id=updated_wallet.id,
-            type="DEPOSIT",
-            amount=amount,
-            price=Decimal("1.00"),
-            symbol="USD",
-        )
-
-        self.db.add(tx)
+            tx = TransactionModel(
+                wallet_id=updated_wallet.id,
+                type="DEPOSIT",
+                amount=amount,
+                price=Decimal("1.00"),
+                symbol="USD",
+            )
+            db.add(tx)
 
         return Result.success(updated_wallet)
 
@@ -64,19 +65,18 @@ class WalletService:
         if buy_result.is_failure:
             return Result.failure(buy_result.error)
 
-        updated_wallet = self.wallet_repo.save(wallet)
-        self._sync_persistence_assets(wallet)
+        with get_db(self.db) as db:
+            updated_wallet = self.wallet_repo.save(wallet)
+            self._sync_persistence_assets(wallet)
 
-        tx = TransactionModel(
-            wallet_id=updated_wallet.id,
-            type="BUY",
-            amount=amount,
-            price=price,
-            symbol=symbol,
-        )
-
-        self.db.add(tx)
-        self.db.flush()
+            tx = TransactionModel(
+                wallet_id=updated_wallet.id,
+                type="BUY",
+                amount=amount,
+                price=price,
+                symbol=symbol,
+            )
+            db.add(tx)
 
         saved_wallet = self.wallet_repo.get_by_user_id(user_id)
         return Result.success(saved_wallet)
@@ -90,19 +90,18 @@ class WalletService:
         if sell_result.is_failure:
             return Result.failure(sell_result.error)
 
-        updated_wallet = self.wallet_repo.save(wallet)
-        self._sync_persistence_assets(wallet)
+        with get_db(self.db) as db:
+            updated_wallet = self.wallet_repo.save(wallet)
+            self._sync_persistence_assets(wallet)
 
-        tx = TransactionModel(
-            wallet_id=updated_wallet.id,
-            type="SELL",
-            amount=amount,
-            price=price,
-            symbol=symbol,
-        )
-
-        self.db.add(tx)
-        self.db.flush()
+            tx = TransactionModel(
+                wallet_id=updated_wallet.id,
+                type="SELL",
+                amount=amount,
+                price=price,
+                symbol=symbol,
+            )
+            db.add(tx)
 
         saved_wallet = self.wallet_repo.get_by_user_id(user_id)
         return Result.success(saved_wallet)
@@ -200,17 +199,17 @@ class WalletService:
         if withdraw_result.is_failure:
             return Result.failure(withdraw_result.error)
 
-        updated_wallet = self.wallet_repo.save(wallet)
+        with get_db(self.db) as db:
+            updated_wallet = self.wallet_repo.save(wallet)
 
-        tx = TransactionModel(
-            wallet_id=updated_wallet.id,
-            type="WITHDRAW",
-            amount=amount,
-            price=Decimal("1.00"),
-            symbol="USD",
-        )
-        self.db.add(tx)
-        self.db.flush()
+            tx = TransactionModel(
+                wallet_id=updated_wallet.id,
+                type="WITHDRAW",
+                amount=amount,
+                price=Decimal("1.00"),
+                symbol="USD",
+            )
+            db.add(tx)
 
         return Result.success(updated_wallet)
 
@@ -249,30 +248,30 @@ class WalletService:
                     f"არასაკმარისი ბალანსი. ხელმისაწვდომია: ${sender_wallet.fiat_balance:,.2f}, საჭიროა: ${amount:,.2f}."
                 )
 
-            sender_wallet.fiat_balance -= amount
-            receiver_wallet.fiat_balance += amount
-            self.wallet_repo.save(sender_wallet)
-            self.wallet_repo.save(receiver_wallet)
+            with get_db(self.db) as db:
+                sender_wallet.fiat_balance -= amount
+                receiver_wallet.fiat_balance += amount
+                self.wallet_repo.save(sender_wallet)
+                self.wallet_repo.save(receiver_wallet)
 
-            tx_out = TransactionModel(
-                wallet_id=sender_wallet.id,
-                type="TRANSFER_OUT",
-                amount=amount,
-                price=Decimal("1.00"),
-                symbol="USD",
-            )
-            
-            tx_in = TransactionModel(
-                wallet_id=receiver_wallet.id,
-                type="TRANSFER_IN",
-                amount=amount,
-                price=Decimal("1.00"),
-                symbol="USD",
-            )
-            
-            self.db.add(tx_out)
-            self.db.add(tx_in)
-            self.db.flush()
+                tx_out = TransactionModel(
+                    wallet_id=sender_wallet.id,
+                    type="TRANSFER_OUT",
+                    amount=amount,
+                    price=Decimal("1.00"),
+                    symbol="USD",
+                )
+                
+                tx_in = TransactionModel(
+                    wallet_id=receiver_wallet.id,
+                    type="TRANSFER_IN",
+                    amount=amount,
+                    price=Decimal("1.00"),
+                    symbol="USD",
+                )
+                
+                db.add(tx_out)
+                db.add(tx_in)
 
             return Result.success(
                 {
@@ -293,48 +292,48 @@ class WalletService:
                     f"არასაკმარისი {asset_symbol} აქტივი. ხელმისაწვდომია: {available}, საჭიროა: {amount}."
                 )
 
-            sender_asset.amount -= amount
-            self.wallet_repo.save(sender_wallet)
-            self._sync_persistence_assets(sender_wallet)
+            with get_db(self.db) as db:
+                sender_asset.amount -= amount
+                self.wallet_repo.save(sender_wallet)
+                self._sync_persistence_assets(sender_wallet)
 
-            receiver_asset = next(
-                (a for a in receiver_wallet.assets if a.symbol == asset_symbol),
-                None,
-            )
-            avg_price = sender_asset.average_buy_price
-            if receiver_asset:
-                receiver_asset.update_on_buy(amount, avg_price)
-            else:
-                receiver_wallet.assets.append(
-                    WalletAsset(
-                        symbol=asset_symbol,
-                        amount=amount,
-                        average_buy_price=avg_price,
-                    )
+                receiver_asset = next(
+                    (a for a in receiver_wallet.assets if a.symbol == asset_symbol),
+                    None,
                 )
+                avg_price = sender_asset.average_buy_price
+                if receiver_asset:
+                    receiver_asset.update_on_buy(amount, avg_price)
+                else:
+                    receiver_wallet.assets.append(
+                        WalletAsset(
+                            symbol=asset_symbol,
+                            amount=amount,
+                            average_buy_price=avg_price,
+                        )
+                    )
 
-            self.wallet_repo.save(receiver_wallet)
-            self._sync_persistence_assets(receiver_wallet)
+                self.wallet_repo.save(receiver_wallet)
+                self._sync_persistence_assets(receiver_wallet)
 
-            tx_out = TransactionModel(
-                wallet_id=sender_wallet.id,
-                type="TRANSFER_OUT",
-                amount=amount,
-                price=avg_price,
-                symbol=asset_symbol,
-            )
-            
-            tx_in = TransactionModel(
-                wallet_id=receiver_wallet.id,
-                type="TRANSFER_IN",
-                amount=amount,
-                price=avg_price,
-                symbol=asset_symbol,
-            )
-            
-            self.db.add(tx_out)
-            self.db.add(tx_in)
-            self.db.flush()
+                tx_out = TransactionModel(
+                    wallet_id=sender_wallet.id,
+                    type="TRANSFER_OUT",
+                    amount=amount,
+                    price=avg_price,
+                    symbol=asset_symbol,
+                )
+                
+                tx_in = TransactionModel(
+                    wallet_id=receiver_wallet.id,
+                    type="TRANSFER_IN",
+                    amount=amount,
+                    price=avg_price,
+                    symbol=asset_symbol,
+                )
+                
+                db.add(tx_out)
+                db.add(tx_in)
 
             return Result.success(
                 {

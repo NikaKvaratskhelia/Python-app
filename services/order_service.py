@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import Optional, List
 from sqlalchemy.orm import Session, joinedload
+from core.database import get_db
 from core.helpers import clear_console
 from core.result import Result
 from infrastructure.persistence.models.order_model import (
@@ -88,8 +89,8 @@ class OrderService:
             is_reserved=True,
         )
 
-        self.db.add(order)
-        self.db.flush()
+        with get_db(self.db) as db:
+            db.add(order)
         return Result.success(order)
 
     def cancel_order(self, order_id: int, user_id: int) -> Result[OrderModel, str]:
@@ -116,31 +117,31 @@ class OrderService:
                 f"შეუძლებელია ორდერის გაუქმება. მხოლოდ PENDING ორდერების გაუქმებაა შესაძლებელი (მიმდინარე სტატუსი: {order.status})."
             )
 
-        if order.is_reserved:
-            if order.order_type == OrderType.BUY_LIMIT.value:
-                refund_fiat = order.amount * order.target_price
-                order.wallet.fiat_balance += refund_fiat
+        with get_db(self.db) as db:
+            if order.is_reserved:
+                if order.order_type == OrderType.BUY_LIMIT.value:
+                    refund_fiat = order.amount * order.target_price
+                    order.wallet.fiat_balance += refund_fiat
 
-            elif order.order_type in (
-                OrderType.SELL_LIMIT.value,
-                OrderType.STOP_LOSS.value,
-            ):
-                asset = next(
-                    (a for a in order.wallet.assets if a.symbol == order.symbol), None
-                )
-                if asset:
-                    asset.amount += order.amount
-                else:
-                    new_asset = WalletAssetModel(
-                        wallet_id=order.wallet_id,
-                        symbol=order.symbol,
-                        amount=order.amount,
-                        average_buy_price=order.target_price,
+                elif order.order_type in (
+                    OrderType.SELL_LIMIT.value,
+                    OrderType.STOP_LOSS.value,
+                ):
+                    asset = next(
+                        (a for a in order.wallet.assets if a.symbol == order.symbol), None
                     )
-                    self.db.add(new_asset)
+                    if asset:
+                        asset.amount += order.amount
+                    else:
+                        new_asset = WalletAssetModel(
+                            wallet_id=order.wallet_id,
+                            symbol=order.symbol,
+                            amount=order.amount,
+                            average_buy_price=order.target_price,
+                        )
+                        db.add(new_asset)
 
-        order.status = OrderStatus.CANCELLED.value
-        self.db.flush()
+            order.status = OrderStatus.CANCELLED.value
         return Result.success(order)
 
     def get_orders(

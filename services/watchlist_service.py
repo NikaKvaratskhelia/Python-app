@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from core.database import get_db
 from core.result import Result
 from infrastructure.persistence.models.watchlist_model import WatchlistModel
 
@@ -24,25 +25,25 @@ class WatchlistService:
             return Result.failure(f"{symbol} უკვე დამატებულია რჩეულებში.")
 
         item = WatchlistModel(user_id=user_id, symbol=symbol)
-        self.db.add(item)
-        self.db.flush()
+        with get_db(self.db) as db:
+            db.add(item)
         return Result.success(item)
 
     def remove(self, user_id: int, symbol: str) -> Result[None, str]:
         symbol = symbol.strip().upper()
-        item = (
-            self.db.query(WatchlistModel)
-            .filter(
-                WatchlistModel.user_id == user_id,
-                WatchlistModel.symbol == symbol,
+        with get_db(self.db) as db:
+            item = (
+                db.query(WatchlistModel)
+                .filter(
+                    WatchlistModel.user_id == user_id,
+                    WatchlistModel.symbol == symbol,
+                )
+                .first()
             )
-            .first()
-        )
-        if not item:
-            return Result.failure(f"{symbol} ვერ მოიძებნა რჩეულებში.")
+            if not item:
+                return Result.failure(f"{symbol} ვერ მოიძებნა რჩეულებში.")
 
-        self.db.delete(item)
-        self.db.flush()
+            db.delete(item)
         return Result.success(None)
 
     def get_watchlist(self, user_id: int) -> list[str]:
