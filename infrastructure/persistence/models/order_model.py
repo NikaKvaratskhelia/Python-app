@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from typing import TYPE_CHECKING
-from sqlalchemy import Integer, Numeric, String, ForeignKey, DateTime, func
+from sqlalchemy import Integer, Numeric, String, ForeignKey, DateTime, Boolean, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from core.database import Base
 
@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 class OrderType(str, Enum):
     BUY_LIMIT = "BUY_LIMIT"
     SELL_LIMIT = "SELL_LIMIT"
+    STOP_LOSS = "STOP_LOSS"
+    TAKE_PROFIT = "TAKE_PROFIT"
 
 
 class OrderStatus(str, Enum):
@@ -33,7 +35,7 @@ class OrderModel(Base):
 
     symbol: Mapped[str] = mapped_column(String(10), nullable=False)
 
-    order_type: Mapped[str] = mapped_column(String(10), nullable=False)
+    order_type: Mapped[str] = mapped_column(String(20), nullable=False)
 
     target_price: Mapped[Decimal] = mapped_column(
         Numeric(precision=18, scale=8), nullable=False
@@ -45,6 +47,10 @@ class OrderModel(Base):
 
     status: Mapped[str] = mapped_column(
         String(20), default=OrderStatus.PENDING.value, nullable=False
+    )
+
+    is_reserved: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
     )
 
     created_at: Mapped[datetime] = mapped_column(
