@@ -1,5 +1,6 @@
 from decimal import Decimal
 from core.database import get_db
+from core.helpers import clear_console
 from services.market_service import MarketService
 from services.wallet_service import WalletService
 from core.result import Result
@@ -16,6 +17,7 @@ def market_menu(user_id: int, username: str):
         choice = input("\nაირჩიეთ მოქმედება: ").strip()
 
         if choice == "1":
+            clear_console()
 
             print("\nმიმდინარეობს ბაზრის მონაცემების წამოღება...")
 
@@ -43,13 +45,15 @@ def market_menu(user_id: int, username: str):
                 count += 1
 
         elif choice == "2":
+            clear_console()
+
             symbol = (
                 input("შეიყვანეთ კრიპტოვალუტის სიმბოლო (მაგ: BTC, ETH, SOL): ")
                 .strip()
                 .upper()
             )
 
-            print(f"🔄 მიმდინარეობს {symbol} მონაცემების წამოღება...")
+            print(f"მიმდინარეობს {symbol} მონაცემების წამოღება...")
 
             market_info = MarketService.get_market_stats(symbol)
 
@@ -70,7 +74,8 @@ def market_menu(user_id: int, username: str):
             if confirm == "y":
                 amount_str = input(f"რაოდენობა ({symbol}): ").strip()
                 parse_result = Result.try_catch(
-                    lambda: Decimal(amount_str), lambda _: "არასწორი რაოდენობის ფორმატი."
+                    lambda: Decimal(amount_str),
+                    lambda _: "არასწორი რაოდენობის ფორმატი.",
                 )
                 if parse_result.is_failure:
                     print(f"შეცდომა: {parse_result.error}")
@@ -90,6 +95,8 @@ def market_menu(user_id: int, username: str):
                     print(f"შეცდომა: {buy_result.error}")
 
         elif choice == "3":
+            clear_console()
+
             symbol = (
                 input("კრიპტოვალუტის სიმბოლო გასაყიდად (მაგ: BTC, ETH): ")
                 .strip()
@@ -104,9 +111,7 @@ def market_menu(user_id: int, username: str):
 
             print(f"მიმდინარე საბაზრო ფასი: ${live_price:,.2f}")
 
-            amount_str = input(
-                f"რაოდენობა რამდენი გსურთ გაყიდვა ({symbol}): "
-            ).strip()
+            amount_str = input(f"რაოდენობა რამდენი გსურთ გაყიდვა ({symbol}): ").strip()
             parse_result = Result.try_catch(
                 lambda: Decimal(amount_str), lambda _: "არასწორი რაოდენობის ფორმატი."
             )

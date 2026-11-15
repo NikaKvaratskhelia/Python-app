@@ -1,5 +1,6 @@
 from decimal import Decimal
 from core.database import get_db
+from core.helpers import clear_console
 from services.wallet_service import WalletService
 from core.result import Result
 
@@ -15,6 +16,7 @@ def wallet_menu(user_id: int, username: str):
         choice = input("\nაირჩიეთ მოქმედება: ").strip()
 
         if choice == "1":
+            clear_console()
             with get_db() as db:
                 service = WalletService(db)
                 summary = service.get_portfolio_summary(user_id)
@@ -47,6 +49,7 @@ def wallet_menu(user_id: int, username: str):
                     print("-" * 40)
 
         elif choice == "2":
+            clear_console()
             amount_str = input("შეიყვანეთ დეპოზიტის თანხა ($): ").strip()
             parse_result = Result.try_catch(
                 lambda: Decimal(amount_str), lambda _: "არასწორი თანხის ფორმატი."
@@ -65,6 +68,8 @@ def wallet_menu(user_id: int, username: str):
                 print(f"შეცდომა: {result.error}")
 
         elif choice == "3":
+            clear_console()
+
             with get_db() as db:
                 service = WalletService(db)
                 wallet = service.get_or_create_wallet(user_id)
