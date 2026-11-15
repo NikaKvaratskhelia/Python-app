@@ -1,35 +1,45 @@
+from rich.console import Console
 from infrastructure.security.session_storage import clear_session
 from core.helpers import clear_console
+from presentation.admin.users.users_menu import run_admin_users_menu
+from presentation.admin.analytics.platform_stats_view import view_platform_stats_view
+from presentation.admin.transactions.global_transactions_view import view_global_transactions_view
+from presentation.admin.bot.bot_control_view import run_bot_control_view
+
+console = Console()
 
 
 def run_admin_menu(session_data: dict):
-    clear_console()
+    admin_user_id = session_data.get("user_id")
 
     while True:
-        print(f"\n--- ადმინისტრატორის პანელი ({session_data.get('username')}) ---")
-        print("1. ყველა მომხმარებლის მართვა")
-        print("2. სისტემური პარამეტრები")
-        print("3. სისტემიდან გამოსვლა (Logout)")
-        print("0. აპლიკაციიდან გასვლა (Exit)")
+        clear_console()
+        console.print(f"[bold magenta]=== ადმინისტრატორის მართვის პანელი ({session_data.get('username')}) ===[/bold magenta]\n")
+        console.print("1. მომხმარებლების მართვა (სია, როლები, ბალანსის კორექტირება)")
+        console.print("2. პლატფორმის გლობალური სტატისტიკა და ანალიტიკა")
+        console.print("3. სისტემური ტრანზაქციების ჟურნალი (Audit Log)")
+        console.print("4. სავაჭრო ბოტის მართვა და მონიტორინგი")
+        console.print("5. სისტემიდან გამოსვლა (Logout)")
+        console.print("0. აპლიკაციიდან გასვლა (Exit)")
 
-        choice = input("აირჩიე (0-3): ").strip()
+        choice = input("\nაირჩიე (0-5): ").strip()
 
         if choice == "1":
-            clear_console()
-            print("აქ იქნება იუზერების სია და მართვა.")
+            run_admin_users_menu(admin_user_id)
         elif choice == "2":
-            clear_console()
-            print("სისტემური პარამეტრები...")
+            view_platform_stats_view()
         elif choice == "3":
+            view_global_transactions_view()
+        elif choice == "4":
+            run_bot_control_view()
+        elif choice == "5":
             clear_console()
             clear_session()
-            print("გამოხვედით სისტემიდან.")
+            console.print("[green]გამოხვედით სისტემიდან.[/green]")
             return "logout"
-
         elif choice == "0":
             clear_console()
-            print("ნახვამდის!")
+            console.print("[cyan]ნახვამდის![/cyan]")
             return "exit"
         else:
-            clear_console()
-            print("არასწორი არჩევანი.")
+            console.print("[red]არასწორი არჩევანი.[/red]")
