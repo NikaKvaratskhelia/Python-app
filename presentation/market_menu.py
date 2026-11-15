@@ -133,6 +133,8 @@ def market_menu(user_id: int, username: str):
                 print(f"შეცდომა: {sell_result.error}")
 
         elif choice == "0":
+            clear_console()
+
             break
 
         else:

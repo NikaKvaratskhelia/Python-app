@@ -64,7 +64,9 @@ class OrderBotEngine:
                     logger.warning(f"BUY ორდერის შეცდომა (#{order.id}): {res.error}")
 
             # SELL LIMIT: საბაზრო ფასი >= სამიზნე ფასზე
-            elif order.order_type == "SELL_LIMIT" and current_price >= order.target_price:
+            elif (
+                order.order_type == "SELL_LIMIT" and current_price >= order.target_price
+            ):
                 res = wallet_service.sell_asset(user_id, symbol, amount, current_price)
                 if res.is_success:
                     order.status = "EXECUTED"
@@ -79,7 +81,9 @@ class OrderBotEngine:
         მუშაობს ფონურ ციკლში მითითებული ინტერვალით.
         """
         cls._running = True
-        logger.info(f"კრიპტო ორდერების ბოტი ჩაირთო ({interval_seconds} წმ ინტერვალით)...")
+        logger.info(
+            f"კრიპტო ორდერების ბოტი ჩაირთო ({interval_seconds} წმ ინტერვალით)..."
+        )
 
         while cls._running:
             try:

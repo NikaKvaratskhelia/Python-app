@@ -84,6 +84,8 @@ def wallet_menu(user_id: int, username: str):
                     )
 
         elif choice == "0":
+            clear_console()
+
             break
         else:
             print("არასწორი არჩევანი, სცადეთ თავიდან.")

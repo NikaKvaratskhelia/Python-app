@@ -1,5 +1,6 @@
 from infrastructure.security.session_storage import clear_session
 from core.helpers import clear_console
+from presentation.orders_menu import order_menu
 from presentation.wallet_menu import wallet_menu
 from presentation.market_menu import market_menu
 
@@ -16,9 +17,10 @@ def run_user_menu(session_data: dict):
         print("1. ჩემი პროფილის ნახვა")
         print("2. ჩემი საფულე (ბალანსი და აქტივები)")
         print("3. კრიპტო ბაზარი და ვაჭრობა")
-        print("4. გასვლა (Logout)")
+        print("4. ლიმიტირებული ორდერები")
+        print("5. გასვლა (Logout)")
 
-        choice = input("აირჩიე (1-4): ").strip()
+        choice = input("აირჩიე (1-5): ").strip()
 
         if choice == "1":
             clear_console()
@@ -46,8 +48,17 @@ def run_user_menu(session_data: dict):
 
         elif choice == "4":
             clear_console()
-            clear_session()
 
+            if not user_id:
+                print("შეცდომა: სესიაში ვერ მოიძებნა იუზერის ID.")
+                continue
+
+            order_menu(user_id=user_id, username=username)
+            clear_console()
+
+        elif choice == "5":
+            clear_console()
+            clear_session()
             print("გამოდედით სისტემიდან.")
             break
         else:
