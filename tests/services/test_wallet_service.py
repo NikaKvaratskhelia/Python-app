@@ -105,3 +105,98 @@ def test_wallet_service_portfolio_summary(db_session, monkeypatch):
     assert len(summary["assets"]) == 1
     assert summary["assets"][0]["symbol"] == "ETH"
     assert summary["assets"][0]["pnl_usd"] == Decimal("500.00")
+
+
+def test_wallet_service_withdraw(db_session):
+    user_id = _create_test_user(db_session, "user_wd")
+    service = WalletService(db_session)
+
+    # Initial balance is 10,000
+    res = service.withdraw(user_id, Decimal("3000.00"))
+    assert res.is_success
+    assert res.value.fiat_balance == Decimal("7000.00")
+
+    # Exceeding balance
+    bad_res = service.withdraw(user_id, Decimal("8000.00"))
+    assert bad_res.is_failure
+    assert "არასაკმარისი ბალანსი" in bad_res.error
+
+
+def test_wallet_service_transfer_usd(db_session):
+    sender_id = _create_test_user(db_session, "sender_u")
+    receiver_id = _create_test_user(db_session, "receiver_u")
+    service = WalletService(db_session)
+
+    # Transfer 2000 USD
+    res = service.transfer(sender_id, "receiver_u", "USD", Decimal("2000.00"))
+    assert res.is_success
+
+    sender_w = service.get_or_create_wallet(sender_id)
+    receiver_w = service.get_or_create_wallet(receiver_id)
+
+    assert sender_w.fiat_balance == Decimal("8000.00")
+    assert receiver_w.fiat_balance == Decimal("12000.00")
+
+
+def test_wallet_service_transfer_crypto(db_session):
+    sender_id = _create_test_user(db_session, "sender_crypto")
+    receiver_id = _create_test_user(db_session, "receiver_crypto")
+    service = WalletService(db_session)
+
+    # Sender buys 2 SOL
+    service.buy_asset(sender_id, "SOL", Decimal("2.0"), Decimal("150.00"))
+
+    # Transfer 1.5 SOL to receiver
+    res = service.transfer(sender_id, "receiver_crypto", "SOL", Decimal("1.5"))
+    assert res.is_success
+
+    sender_w = service.get_or_create_wallet(sender_id)
+    receiver_w = service.get_or_create_wallet(receiver_id)
+
+    sender_sol = next(a for a in sender_w.assets if a.symbol == "SOL")
+    receiver_sol = next(a for a in receiver_w.assets if a.symbol == "SOL")
+
+    assert sender_sol.amount == Decimal("0.5")
+    assert receiver_sol.amount == Decimal("1.5")
+
+
+def test_wallet_service_transfer_validation(db_session):
+    sender_id = _create_test_user(db_session, "sender_val")
+    service = WalletService(db_session)
+
+    # Transfer to self
+    self_res = service.transfer(sender_id, "sender_val", "USD", Decimal("100.00"))
+    assert self_res.is_failure
+    assert "დაუშვებელია" in self_res.error
+
+    # Non-existent receiver
+    none_res = service.transfer(sender_id, "ghost_user", "USD", Decimal("100.00"))
+    assert none_res.is_failure
+    assert "ვერ მოიძებნა" in none_res.error
+
+
+def test_wallet_service_export_csv(db_session, tmp_path):
+    user_id = _create_test_user(db_session, "csv_user")
+    service = WalletService(db_session)
+    service.deposit(user_id, Decimal("500.00"))
+
+    export_res = service.export_transactions_csv(user_id, directory=str(tmp_path))
+    assert export_res.is_success
+    import os
+    assert os.path.exists(export_res.value)
+
+
+def test_wallet_service_advanced_analytics(db_session, monkeypatch):
+    user_id = _create_test_user(db_session, "analytics_user")
+    service = WalletService(db_session)
+    service.buy_asset(user_id, "ETH", Decimal("1.0"), Decimal("2000.00"))
+
+    monkeypatch.setattr(
+        MarketService,
+        "get_all_active_prices",
+        lambda: {"ETH": {"price": Decimal("2500.00"), "change": Decimal("10.0")}},
+    )
+
+    analytics = service.get_advanced_portfolio_analytics(user_id)
+    assert len(analytics["allocations"]) == 2  # USD + ETH
+    assert analytics["unrealized_pnl"] == Decimal("500.00")

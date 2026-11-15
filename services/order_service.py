@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import Optional, List
 from sqlalchemy.orm import Session, joinedload
+from core.helpers import clear_console
 from core.result import Result
 from infrastructure.persistence.models.order_model import (
     OrderModel,
@@ -25,6 +26,7 @@ class OrderService:
         amount: Decimal,
         target_price: Decimal,
     ) -> Result[OrderModel, str]:
+        user_id = int(user_id)
         symbol = symbol.strip().upper()
 
         if amount <= Decimal("0"):
@@ -92,6 +94,8 @@ class OrderService:
         return Result.success(order)
 
     def cancel_order(self, order_id: int, user_id: int) -> Result[OrderModel, str]:
+        order_id = int(order_id)
+        user_id = int(user_id)
         order = (
             self.db.query(OrderModel)
             .options(joinedload(OrderModel.wallet).joinedload(WalletModel.assets))
@@ -100,12 +104,15 @@ class OrderService:
         )
 
         if not order:
+            clear_console()
             return Result.failure(f"ორდერი #{order_id} ვერ მოიძებნა.")
 
-        if order.wallet.user_id != user_id:
+        if int(order.wallet.user_id) != user_id:
+            clear_console()
             return Result.failure("წვდომა შეზღუდულია: ორდერი თქვენ არ გეკუთვნით.")
 
         if order.status != OrderStatus.PENDING.value:
+            clear_console()
             return Result.failure(
                 f"შეუძლებელია ორდერის გაუქმება. მხოლოდ PENDING ორდერების გაუქმებაა შესაძლებელი (მიმდინარე სტატუსი: {order.status})."
             )
@@ -136,15 +143,15 @@ class OrderService:
         order.status = OrderStatus.CANCELLED.value
         self.db.commit()
         self.db.refresh(order)
+
         return Result.success(order)
 
     def get_orders(
         self, user_id: int, status_filter: Optional[str] = None
     ) -> List[OrderModel]:
+        user_id = int(user_id)
         wallet = (
-            self.db.query(WalletModel)
-            .filter(WalletModel.user_id == user_id)
-            .first()
+            self.db.query(WalletModel).filter(WalletModel.user_id == user_id).first()
         )
         if not wallet:
             return []

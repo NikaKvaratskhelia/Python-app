@@ -7,6 +7,8 @@ import infrastructure.persistence.models.wallet_model
 import infrastructure.persistence.models.wallet_asset
 import infrastructure.persistence.models.transaction_model
 import infrastructure.persistence.models.order_model
+import infrastructure.persistence.models.watchlist_model
+import infrastructure.persistence.models.price_alert_model
 
 
 @pytest.fixture
