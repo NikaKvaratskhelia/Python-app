@@ -140,3 +140,106 @@ def test_stop_bot():
     OrderBotEngine._running = True
     OrderBotEngine.stop()
     assert OrderBotEngine._running is False
+
+
+def test_stop_loss_executed_when_price_drops(db_session, monkeypatch):
+    user, wallet = _create_user_and_wallet(db_session, "user_sl", Decimal("100000.00"))
+    wallet_svc = WalletService(db_session)
+    wallet_svc.buy_asset(user.id, "BTC", Decimal("1.0"), Decimal("90000.00"))
+    db_session.commit()
+
+    from services.order_service import OrderService
+    order_svc = OrderService(db_session)
+    order_res = order_svc.create_order(
+        user_id=user.id,
+        symbol="BTC",
+        order_type="STOP_LOSS",
+        amount=Decimal("1.0"),
+        target_price=Decimal("80000.00"),
+    )
+    assert order_res.is_success
+    order = order_res.value
+
+    # Price drops to 78,000 (below 80,000)
+    monkeypatch.setattr(
+        MarketService,
+        "get_all_active_prices",
+        lambda: {"BTC": {"price": Decimal("78000.00"), "change": Decimal("-10.0")}},
+    )
+
+    OrderBotEngine.check_orders_once(db_session)
+
+    db_session.refresh(order)
+    db_session.refresh(wallet)
+    assert order.status == "EXECUTED"
+    # Wallet gets 78000.00 added
+    # 100000 - 90000 = 10000 before SL + 78000 = 88000
+    assert wallet.fiat_balance == Decimal("88000.00")
+
+
+def test_reserved_sell_limit_executed_when_price_rises(db_session, monkeypatch):
+    user, wallet = _create_user_and_wallet(db_session, "user_sell_res", Decimal("100000.00"))
+    wallet_svc = WalletService(db_session)
+    wallet_svc.buy_asset(user.id, "BTC", Decimal("1.0"), Decimal("90000.00"))
+    db_session.commit()
+
+    from services.order_service import OrderService
+    order_svc = OrderService(db_session)
+    order_res = order_svc.create_order(
+        user_id=user.id,
+        symbol="BTC",
+        order_type="SELL_LIMIT",
+        amount=Decimal("1.0"),
+        target_price=Decimal("95000.00"),
+    )
+    assert order_res.is_success
+    order = order_res.value
+
+    # Price rises to 96,000 (above 95,000)
+    monkeypatch.setattr(
+        MarketService,
+        "get_all_active_prices",
+        lambda: {"BTC": {"price": Decimal("96000.00"), "change": Decimal("6.0")}},
+    )
+
+    OrderBotEngine.check_orders_once(db_session)
+
+    db_session.refresh(order)
+    db_session.refresh(wallet)
+    assert order.status == "EXECUTED"
+    # 100000 - 90000 = 10000 before sell + 96000 = 106000
+    assert wallet.fiat_balance == Decimal("106000.00")
+
+
+def test_reserved_buy_limit_executed_with_price_improvement(db_session, monkeypatch):
+    user, wallet = _create_user_and_wallet(db_session, "user_res_exec", Decimal("10000.00"))
+
+    from services.order_service import OrderService
+    order_svc = OrderService(db_session)
+    order_res = order_svc.create_order(
+        user_id=user.id,
+        symbol="ETH",
+        order_type="BUY_LIMIT",
+        amount=Decimal("2.0"),
+        target_price=Decimal("3000.00"),  # Reserved 6,000; Remaining fiat = 4,000
+    )
+    assert order_res.is_success
+    order = order_res.value
+
+    # Price drops to 2,800 (costs 2 * 2800 = 5600, refund diff = 400)
+    monkeypatch.setattr(
+        MarketService,
+        "get_all_active_prices",
+        lambda: {"ETH": {"price": Decimal("2800.00"), "change": Decimal("-5.0")}},
+    )
+
+    OrderBotEngine.check_orders_once(db_session)
+
+    db_session.refresh(order)
+    db_session.refresh(wallet)
+    assert order.status == "EXECUTED"
+    # 4000 + 400 refund = 4400
+    assert wallet.fiat_balance == Decimal("4400.00")
+    eth_asset = next(a for a in wallet.assets if a.symbol == "ETH")
+    assert eth_asset.amount == Decimal("2.0")
+    assert eth_asset.average_buy_price == Decimal("2800.00")

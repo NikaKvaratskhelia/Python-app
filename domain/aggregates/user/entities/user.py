@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from core.result import Result
@@ -13,7 +13,9 @@ class User:
     username: str = ""
     password_hash: str = ""
     role: UserRole = UserRole.REGULAR
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     @staticmethod
     def create(
