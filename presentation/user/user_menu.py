@@ -6,6 +6,7 @@ from presentation.user.profile.profile_menu import profile_menu
 from presentation.user.wallet.wallet_menu import wallet_menu
 from presentation.user.market.market_menu import market_menu
 from presentation.user.orders.orders_menu import order_menu
+from presentation.user.leaderboard.leaderboard_view import show_leaderboard_view
 
 
 def run_user_menu(session_data: dict):
@@ -42,10 +43,11 @@ def run_user_menu(session_data: dict):
         print("2. ჩემი საფულე (ბალანსი და აქტივები - LIVE)")
         print("3. კრიპტო ბაზარი და ვაჭრობა (LIVE)")
         print("4. ლიმიტირებული ორდერები (LIVE)")
-        print("5. სისტემიდან გამოსვლა (Logout)")
+        print("5. ტოპ ტრეიდერების ლიდერბორდი (Leaderboard)")
+        print("6. სისტემიდან გამოსვლა (Logout)")
         print("0. აპლიკაციიდან გასვლა (Exit)")
 
-        choice = input("აირჩიე (0-5): ").strip()
+        choice = input("აირჩიე (0-6): ").strip()
 
         if choice == "1":
             clear_console()
@@ -81,6 +83,9 @@ def run_user_menu(session_data: dict):
             clear_console()
 
         elif choice == "5":
+            show_leaderboard_view(limit=10)
+
+        elif choice == "6":
             clear_console()
             clear_session()
             print("გამოხვედით სისტემიდან.")

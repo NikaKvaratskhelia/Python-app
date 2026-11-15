@@ -28,6 +28,10 @@ def view_platform_stats_view():
         "განხორციელებული ტრანზაქციები:", str(stats["total_transactions"])
     )
     table.add_row(
+        "პლატფორმის შემოსავალი (Trading Fees):",
+        f"${stats['total_fees_collected']:,.2f}",
+    )
+    table.add_row(
         "აქტიური (PENDING) ორდერები:", str(stats["pending_orders"])
     )
     table.add_row(

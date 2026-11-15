@@ -137,11 +137,14 @@ class AdminService:
         executed_orders = self.db.query(OrderModel).filter(OrderModel.status == OrderStatus.EXECUTED.value).count()
         cancelled_orders = self.db.query(OrderModel).filter(OrderModel.status == OrderStatus.CANCELLED.value).count()
         active_alerts = self.db.query(PriceAlertModel).filter(PriceAlertModel.is_triggered == False).count()
+        fee_txs = self.db.query(TransactionModel).filter(TransactionModel.type == "FEE").all()
+        total_fees = sum((t.amount for t in fee_txs), Decimal("0.00"))
 
         return {
             "total_users": total_users,
             "total_fiat_liquidity": total_fiat,
             "total_transactions": total_txs,
+            "total_fees_collected": total_fees,
             "pending_orders": pending_orders,
             "executed_orders": executed_orders,
             "cancelled_orders": cancelled_orders,

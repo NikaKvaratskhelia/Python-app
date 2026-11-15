@@ -5,6 +5,8 @@ from presentation.user.market.sell_menu import run_sell_menu
 from presentation.user.market.watchlist.watchlist_menu import watchlist_menu
 from presentation.user.market.alerts.alerts_menu import alerts_menu
 from presentation.user.market.movers.top_movers_view import show_live_top_movers
+from presentation.user.market.charts.chart_view import run_interactive_chart_view
+from presentation.user.leaderboard.leaderboard_view import show_leaderboard_view
 
 
 def market_menu(user_id: int, username: str):
@@ -18,6 +20,8 @@ def market_menu(user_id: int, username: str):
         print("4. რჩეული მონეტები (Watchlist) & მართვა (LIVE)")
         print("5. ფასის შეტყობინებები (Price Alerts - LIVE)")
         print("6. დღის ტოპ ზრდა / ვარდნა (Top Gainers & Losers - LIVE)")
+        print("7. კრიპტოვალუტის ინტერაქტიული გრაფიკი (Interactive Chart)")
+        print("8. ტოპ ტრეიდერების ლიდერბორდი (Leaderboard)")
         print("0. უკან დაბრუნება")
 
         choice = input("\nაირჩიეთ მოქმედება: ").strip()
@@ -43,6 +47,12 @@ def market_menu(user_id: int, username: str):
             clear_console()
             show_live_top_movers(limit=5)
             clear_console()
+
+        elif choice == "7":
+            run_interactive_chart_view(default_symbol="BTC")
+
+        elif choice == "8":
+            show_leaderboard_view(limit=10)
 
         elif choice == "0":
             clear_console()

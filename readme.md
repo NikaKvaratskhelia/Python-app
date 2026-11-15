@@ -25,6 +25,9 @@
    - **რჩეული მონეტები (Watchlist)**: პირადი რჩეული სიის შედგენა და მათი ფასების ცოცხალი მონიტორინგი.
    - **ფასის შეტყობინებები (Price Alerts)**: პირობითი ალერტები (ABOVE / BELOW), რომლებსაც ფონური ბოტი აკონტროლებს.
    - **დღის ტოპ ზრდა / ვარდნა (Top Movers)**: TOP 5 Gainers და Losers რეალურ დროში.
+   - **ინტერაქტიული ტერმინალის გრაფიკები (Terminal Interactive Charts)**: ASCII/Unicode სანთლებისა და ტრენდის გრაფიკები, დროითი ინტერვალების გადართვით (5m, 15m, 1h, 4h, 1d) და Sparkline ინდიკატორით.
+   - **საუკეთესო ტრეიდერების ლიდერბორდი (Top Traders Leaderboard)**: მომხმარებელთა გლობალური რეიტინგი პორტფოლიოს Net Worth-ის, ვაჭრობების რაოდენობისა და სავაჭრო მოცულობის მიხედვით.
+   - **პლატფორმის საკომისიოების სისტემა (Trading Fee Model)**: 0.1% სავაჭრო საკომისიოს ავტომატური დაანგარიშება და პლატფორმის შემოსავლის აღრიცხვა.
 
 4. **ავტომატური სავაჭრო ბოტი და ორდერები (Order Bot Engine)**
    - ლიმიტირებული ორდერების ტიპები: `BUY_LIMIT`, `SELL_LIMIT`, `STOP_LOSS`.
@@ -76,6 +79,9 @@ Python-app/
 │   ├── alert_service.py                # ფასის შეტყობინებების მართვა
 │   ├── auth_service.py                 # რეგისტრაცია და ლოგინი
 │   ├── binance_ws.py                   # Binance WebSocket მენეჯერი
+│   ├── chart_service.py                # ASCII გრაფიკები და სანთლების ანალიზი
+│   ├── fee_service.py                  # სავაჭრო საკომისიოები და პლატფორმის შემოსავალი
+│   ├── leaderboard_service.py          # ტრეიდერების რეიტინგი და ლიდერბორდი
 │   ├── market_service.py               # საბაზრო მონაცემები და ფასები
 │   ├── order_bot_engine.py             # ფონური სავაჭრო ბოტი
 │   ├── order_service.py                # ორდერების მართვა და დარეზერვება
@@ -122,7 +128,10 @@ Python-app/
 │       │   ├── sell_menu.py            # LIVE გაყიდვის პრევიუ
 │       │   ├── watchlist/              # LIVE Watchlist მართვა
 │       │   ├── alerts/                 # LIVE შეტყობინებების მართვა
-│       │   └── movers/                 # LIVE Top Movers
+│       │   ├── movers/                 # LIVE Top Movers
+│       │   └── charts/                 # ინტერაქტიული ფასის გრაფიკი
+│       ├── leaderboard/                # საუკეთესო ტრეიდერების ლიდერბორდი
+│       │   └── leaderboard_view.py
 │       └── orders/                     # ორდერების ქვემენიუები
 │           ├── orders_menu.py
 │           ├── view_orders_menu.py     # LIVE ორდერების სია

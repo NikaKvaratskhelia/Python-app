@@ -57,13 +57,27 @@ class WalletService:
         return Result.success(updated_wallet)
 
     def buy_asset(
-        self, user_id: int, symbol: str, amount: Decimal, price: Decimal
+        self,
+        user_id: int,
+        symbol: str,
+        amount: Decimal,
+        price: Decimal,
+        fee: Decimal = Decimal("0.00"),
     ) -> Result[Wallet, str]:
         wallet = self.get_or_create_wallet(user_id)
+
+        total_needed = (amount * price) + fee
+        if wallet.fiat_balance < total_needed:
+            return Result.failure(
+                f"არასაკმარისი ბალანსი. საჭიროა: ${total_needed:,.2f} (საკომისიოს ჩათვლით), ხელმისაწვდომია: ${wallet.fiat_balance:,.2f}."
+            )
 
         buy_result = wallet.buy_asset(symbol, amount, price)
         if buy_result.is_failure:
             return Result.failure(buy_result.error)
+
+        if fee > Decimal("0"):
+            wallet.fiat_balance -= fee
 
         with get_db(self.db) as db:
             updated_wallet = self.wallet_repo.save(wallet)
@@ -78,17 +92,35 @@ class WalletService:
             )
             db.add(tx)
 
+            if fee > Decimal("0"):
+                fee_tx = TransactionModel(
+                    wallet_id=updated_wallet.id,
+                    type="FEE",
+                    amount=fee,
+                    price=Decimal("1.00"),
+                    symbol="USD",
+                )
+                db.add(fee_tx)
+
         saved_wallet = self.wallet_repo.get_by_user_id(user_id)
         return Result.success(saved_wallet)
 
     def sell_asset(
-        self, user_id: int, symbol: str, amount: Decimal, price: Decimal
+        self,
+        user_id: int,
+        symbol: str,
+        amount: Decimal,
+        price: Decimal,
+        fee: Decimal = Decimal("0.00"),
     ) -> Result[Wallet, str]:
         wallet = self.get_or_create_wallet(user_id)
 
         sell_result = wallet.sell_asset(symbol, amount, price)
         if sell_result.is_failure:
             return Result.failure(sell_result.error)
+
+        if fee > Decimal("0"):
+            wallet.fiat_balance -= fee
 
         with get_db(self.db) as db:
             updated_wallet = self.wallet_repo.save(wallet)
@@ -102,6 +134,16 @@ class WalletService:
                 symbol=symbol,
             )
             db.add(tx)
+
+            if fee > Decimal("0"):
+                fee_tx = TransactionModel(
+                    wallet_id=updated_wallet.id,
+                    type="FEE",
+                    amount=fee,
+                    price=Decimal("1.00"),
+                    symbol="USD",
+                )
+                db.add(fee_tx)
 
         saved_wallet = self.wallet_repo.get_by_user_id(user_id)
         return Result.success(saved_wallet)
