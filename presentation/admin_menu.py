@@ -10,9 +10,10 @@ def run_admin_menu(session_data: dict):
 
         print("1. ყველა მომხმარებლის მართვა")
         print("2. სისტემური პარამეტრები")
-        print("3. გასვლა (Logout)")
+        print("3. სისტემიდან გამოსვლა (Logout)")
+        print("0. აპლიკაციიდან გასვლა (Exit)")
 
-        choice = input("აირჩიე (1-3): ").strip()
+        choice = input("აირჩიე (0-3): ").strip()
 
         if choice == "1":
             clear_console()
@@ -26,9 +27,13 @@ def run_admin_menu(session_data: dict):
             clear_console()
             clear_session()
 
-            print("გამოდედით სისტემიდან.")
+            print("გამოხვედით სისტემიდან.")
+            return "logout"
 
-            break
+        elif choice == "0":
+            clear_console()
+            print("ნახვამდის!")
+            return "exit"
         else:
             clear_console()
 

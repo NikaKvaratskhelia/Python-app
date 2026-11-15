@@ -26,13 +26,16 @@ def main():
         session = get_session()
 
         if session:
-
             role = session.get("role")
 
             if role == "admin":
-                run_admin_menu(session)
+                action = run_admin_menu(session)
             else:
-                run_user_menu(session)
+                action = run_user_menu(session)
+
+            if action == "exit":
+                OrderBotEngine.stop()
+                break
         else:
             clear_console()
 
