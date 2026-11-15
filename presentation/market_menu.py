@@ -1,9 +1,13 @@
 from decimal import Decimal
+from rich.console import Console
+from rich.table import Table
 from core.database import get_db
 from core.helpers import clear_console
 from services.market_service import MarketService
 from services.wallet_service import WalletService
 from core.result import Result
+
+console = Console()
 
 
 def market_menu(user_id: int, username: str):
@@ -25,12 +29,20 @@ def market_menu(user_id: int, username: str):
             clear_console()
 
             if not market_data:
-                print("ვეღარ მოხერხდა ბაზრის მონაცემების მიღება.")
+                console.print("[red]ვეღარ მოხერხდა ბაზრის მონაცემების მიღება.[/red]")
                 continue
 
-            print("\nტოპ კრიპტოვალუტები ბაზარზე:")
-            count = 0
+            table = Table(
+                title="ტოპ კრიპტოვალუტები ბაზარზე",
+                show_header=True,
+                header_style="bold magenta",
+            )
+            table.add_column("#", justify="right", style="dim", width=4)
+            table.add_column("სიმბოლო", style="bold cyan")
+            table.add_column("ფასი ($)", justify="right", style="bold white")
+            table.add_column("24სთ ცვლილება", justify="right")
 
+            count = 0
             for symbol, info in market_data.items():
                 if count >= 20:
                     break
@@ -38,12 +50,14 @@ def market_menu(user_id: int, username: str):
                 price = info["price"]
                 change = info["change"]
                 sign = "+" if change >= 0 else ""
+                color = "green" if change >= 0 else "red"
+                change_str = f"[{color}]{sign}{change:.2f}%[/{color}]"
+                price_str = f"${price:,.6f}" if price < 1 else f"${price:,.2f}"
 
-                print(
-                    f" - {symbol}/USDT: ${price:,.4f} | ცვლილება (24სთ): {sign}{change}%"
-                )
-
+                table.add_row(str(count + 1), f"{symbol}/USDT", price_str, change_str)
                 count += 1
+
+            console.print(table)
 
         elif choice == "2":
             clear_console()
@@ -60,16 +74,28 @@ def market_menu(user_id: int, username: str):
             clear_console()
 
             if not market_info:
-                print(f"სიმბოლო '{symbol}' ვერ მოიძებნა ბაზარზე.")
+                console.print(f"[red]სიმბოლო '{symbol}' ვერ მოიძებნა ბაზარზე.[/red]")
                 continue
 
             live_price = market_info["price"]
             change = market_info["price_change_percent"]
             sign = "+" if change >= 0 else ""
+            color = "green" if change >= 0 else "red"
+            price_str = (
+                f"${live_price:,.6f}" if live_price < 1 else f"${live_price:,.2f}"
+            )
 
-            print(f"\nაქტივი: {symbol}")
-            print(f"მიმდინარე ფასი: ${live_price:,.2f}")
-            print(f"24სთ ცვლილება: {sign}{change}%")
+            table = Table(
+                title=f"აქტივის დეტალები: {symbol}",
+                show_header=True,
+                header_style="bold magenta",
+            )
+            table.add_column("პარამეტრი", style="cyan")
+            table.add_column("მნიშვნელობა", justify="right", style="bold white")
+            table.add_row("სიმბოლო", f"{symbol}/USDT")
+            table.add_row("მიმდინარე ფასი", price_str)
+            table.add_row("24სთ ცვლილება", f"[{color}]{sign}{change:.2f}%[/{color}]")
+            console.print(table)
 
             confirm = input(f"\nგსურთ {symbol}-ის ყიდვა? (y/n): ").strip().lower()
 
@@ -80,7 +106,7 @@ def market_menu(user_id: int, username: str):
                     lambda _: "არასწორი რაოდენობის ფორმატი.",
                 )
                 if parse_result.is_failure:
-                    print(f"შეცდომა: {parse_result.error}")
+                    console.print(f"[red]შეცდომა: {parse_result.error}[/red]")
                     continue
 
                 with get_db() as db:
@@ -90,11 +116,11 @@ def market_menu(user_id: int, username: str):
                     )
 
                 if buy_result.is_success:
-                    print(
-                        f"წარმატებით იყიდეთ {parse_result.value} {symbol} (${live_price:,.2f}-იანი ფასით)!"
+                    console.print(
+                        f"[green]წარმატებით იყიდეთ {parse_result.value} {symbol} (${live_price:,.2f}-იანი ფასით)![/green]"
                     )
                 else:
-                    print(f"შეცდომა: {buy_result.error}")
+                    console.print(f"[red]შეცდომა: {buy_result.error}[/red]")
 
         elif choice == "3":
             clear_console()
@@ -117,6 +143,7 @@ def market_menu(user_id: int, username: str):
             parse_result = Result.try_catch(
                 lambda: Decimal(amount_str), lambda _: "არასწორი რაოდენობის ფორმატი."
             )
+
             if parse_result.is_failure:
                 print(f"შეცდომა: {parse_result.error}")
                 continue
@@ -126,6 +153,8 @@ def market_menu(user_id: int, username: str):
                 sell_result = service.sell_asset(
                     user_id, symbol, parse_result.value, live_price
                 )
+
+            clear_console()
 
             if sell_result.is_success:
                 print(
