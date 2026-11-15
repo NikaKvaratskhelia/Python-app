@@ -4,6 +4,7 @@ import io
 from rich.console import Console
 from rich.live import Live
 from rich.table import Table
+from core.helpers import clear_console
 from services.binance_ws import BinanceWSManager
 
 console = Console()
