@@ -64,3 +64,26 @@ def test_delete_alert(db_session):
 
     alerts = service.get_user_alerts(user_id, active_only=False)
     assert len(alerts) == 0
+
+
+def test_get_triggered_alerts(db_session):
+    user_id = _create_user(db_session, "user_a4")
+    service = AlertService(db_session)
+
+    res = service.create_alert(user_id, "BTC", Decimal("100000.00"), "ABOVE")
+    assert res.is_success
+    alert = res.value
+
+    # Initially not triggered
+    triggered_res = service.get_triggered_alerts(user_id)
+    assert triggered_res.is_success
+    assert len(triggered_res.value) == 0
+
+    # Trigger it
+    alert.is_triggered = True
+    db_session.commit()
+
+    triggered_res = service.get_triggered_alerts(user_id)
+    assert triggered_res.is_success
+    assert len(triggered_res.value) == 1
+    assert triggered_res.value[0].symbol == "BTC"

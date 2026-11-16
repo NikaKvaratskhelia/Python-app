@@ -1,6 +1,7 @@
 import requests
 from decimal import Decimal
 from typing import Optional, Dict, Any
+from core.result import Result
 
 
 class MarketService:
@@ -21,17 +22,18 @@ class MarketService:
         if not formatted_symbol.endswith("USDT"):
             formatted_symbol += "USDT"
 
-        try:
-            response = requests.get(
+        res = Result.try_catch(
+            lambda: requests.get(
                 MarketService.PRICE_URL, params={"symbol": formatted_symbol}, timeout=5
-            )
+            ),
+            error_mapper=lambda e: f"ქსელური შეცდომა: {e}",
+        )
 
-            if response.status_code == 200:
-                data = response.json()
-                return Decimal(str(data["price"]))
-
-        except requests.exceptions.RequestException as e:
-            print(f"ქსელური შეცდომა: {e}")
+        if res.is_success and res.value.status_code == 200:
+            data = res.value.json()
+            return Decimal(str(data["price"]))
+        elif res.is_failure:
+            print(res.error)
 
         return None
 
@@ -58,22 +60,23 @@ class MarketService:
         if not formatted_symbol.endswith("USDT"):
             formatted_symbol += "USDT"
 
-        try:
-            response = requests.get(
+        res = Result.try_catch(
+            lambda: requests.get(
                 MarketService.TICKER_24HR_URL,
                 params={"symbol": formatted_symbol},
                 timeout=5,
-            )
+            ),
+            error_mapper=lambda e: f"ქსელური შეცდომა საბაზრო სტატისტიკის წამოღებისას: {e}",
+        )
 
-            if response.status_code == 200:
-                data = response.json()
-                return {
-                    "price": Decimal(str(data["lastPrice"])),
-                    "price_change_percent": Decimal(str(data["priceChangePercent"])),
-                }
-
-        except requests.exceptions.RequestException as e:
-            print(f"ქსელური შეცდომა საბაზრო სტატისტიკის წამოღებისას: {e}")
+        if res.is_success and res.value.status_code == 200:
+            data = res.value.json()
+            return {
+                "price": Decimal(str(data["lastPrice"])),
+                "price_change_percent": Decimal(str(data["priceChangePercent"])),
+            }
+        elif res.is_failure:
+            print(res.error)
 
         return None
 
@@ -95,23 +98,24 @@ class MarketService:
                 for sym, item in ws_prices.items()
             }
 
-        try:
-            response = requests.get(MarketService.TICKER_24HR_URL, timeout=10)
+        res = Result.try_catch(
+            lambda: requests.get(MarketService.TICKER_24HR_URL, timeout=10),
+            error_mapper=lambda e: f"ვეღარ მოხერხდა ბაზრის მონაცემების მიღება: {e}",
+        )
 
-            if response.status_code == 200:
-                result = {}
-                for item in response.json():
-                    sym = item["symbol"]
-                    if sym.endswith("USDT"):
-                        base_symbol = sym[:-4]
-                        result[base_symbol] = {
-                            "price": Decimal(str(item["lastPrice"])),
-                            "change": Decimal(str(item["priceChangePercent"])),
-                        }
-                return result
-
-        except requests.exceptions.RequestException as e:
-            print(f"ვეღარ მოხერხდა ბაზრის მონაცემების მიღება: {e}")
+        if res.is_success and res.value.status_code == 200:
+            result = {}
+            for item in res.value.json():
+                sym = item["symbol"]
+                if sym.endswith("USDT"):
+                    base_symbol = sym[:-4]
+                    result[base_symbol] = {
+                        "price": Decimal(str(item["lastPrice"])),
+                        "change": Decimal(str(item["priceChangePercent"])),
+                    }
+            return result
+        elif res.is_failure:
+            print(res.error)
 
         return {}
 

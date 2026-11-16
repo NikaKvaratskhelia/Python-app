@@ -49,6 +49,17 @@ class AlertService:
             query = query.filter(PriceAlertModel.is_triggered == False)
         return query.order_by(PriceAlertModel.id.desc()).all()
 
+    def get_triggered_alerts(self, user_id: int) -> Result[List[PriceAlertModel], str]:
+        return Result.try_catch(
+            lambda: self.db.query(PriceAlertModel)
+            .filter(
+                PriceAlertModel.user_id == user_id,
+                PriceAlertModel.is_triggered == True,
+            )
+            .all(),
+            error_mapper=lambda e: f"შეტყობინებების მიღების შეცდომა: {e}",
+        )
+
     def delete_alert(self, alert_id: int, user_id: int) -> Result[None, str]:
         with get_db(self.db) as db:
             alert = (

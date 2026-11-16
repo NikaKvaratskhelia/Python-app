@@ -1,13 +1,9 @@
-import sys
-import select
-import io
 from decimal import Decimal
 from typing import Optional, List
 from rich.console import Console
-from rich.live import Live
 from rich.table import Table
 from rich.panel import Panel
-from core.helpers import clear_console
+from core.helpers import clear_console, run_live_loop
 from services.binance_ws import BinanceWSManager
 from services.market_service import MarketService
 
@@ -74,20 +70,7 @@ def run_live_market_view(
 
         return table
 
-    try:
-        with Live(build_table(), refresh_per_second=2, console=console) as live:
-            while True:
-                live.update(build_table())
-                try:
-                    rlist, _, _ = select.select([sys.stdin], [], [], 0.5)
-                except (io.UnsupportedOperation, ValueError, OSError):
-                    rlist = [sys.stdin]
-                if rlist:
-                    sys.stdin.readline()
-                    break
-    except KeyboardInterrupt:
-        pass
-    clear_console()
+    run_live_loop(build_table, console=console)
     console.print("\n[yellow]LIVE სტრიმი შეჩერდა.[/yellow]")
 
 
@@ -134,37 +117,36 @@ def run_live_asset_preview(
             border_style="cyan",
         )
 
-    try:
-        with Live(
-            build_panel(last_known_price, tick_str, stats),
-            refresh_per_second=4,
-            console=console,
-        ) as live:
-            while True:
-                new_stats = MarketService.get_market_stats(sym) or stats
-                cur_price = new_stats["price"]
-                last_known_price = cur_price
+    def _render():
+        nonlocal prev_price, last_known_price, tick_str, stats
+        new_stats = MarketService.get_market_stats(sym) or stats
+        cur_price = new_stats["price"]
+        last_known_price = cur_price
 
-                if cur_price > prev_price:
-                    tick_str = "[bold green]+ UP[/bold green]"
-                elif cur_price < prev_price:
-                    tick_str = "[bold red]- DOWN[/bold red]"
-                else:
-                    tick_str = "[dim]= FLAT[/dim]"
+        if cur_price > prev_price:
+            tick_str = "[bold green]+ UP[/bold green]"
+        elif cur_price < prev_price:
+            tick_str = "[bold red]- DOWN[/bold red]"
+        else:
+            tick_str = "[dim]= FLAT[/dim]"
 
-                prev_price = cur_price
-                live.update(build_panel(cur_price, tick_str, new_stats))
+        prev_price = cur_price
+        return build_panel(cur_price, tick_str, new_stats)
 
-                try:
-                    rlist, _, _ = select.select([sys.stdin], [], [], 0.3)
-                except (io.UnsupportedOperation, ValueError, OSError):
-                    rlist = [sys.stdin]
-                if rlist:
-                    line = sys.stdin.readline().strip().lower()
-                    if line in ("0", "q"):
-                        console.print(f"\n[yellow]{action_title} გაუქმდა.[/yellow]")
-                        return None
-                    return cur_price
-    except KeyboardInterrupt:
+    def _handle_input(raw: str):
+        line = raw.strip().lower()
+        if line in ("0", "q"):
+            return "CANCEL"
+        return last_known_price
+
+    result = run_live_loop(
+        _render,
+        refresh_per_second=4,
+        console=console,
+        poll_timeout=0.3,
+        on_input=_handle_input,
+    )
+    if result in (None, "CANCEL"):
         console.print(f"\n[yellow]{action_title} გაუქმდა.[/yellow]")
         return None
+    return result

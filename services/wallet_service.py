@@ -400,7 +400,7 @@ class WalletService:
         )
         filepath = out_dir / filename
 
-        try:
+        def _write_csv() -> str:
             with open(filepath, mode="w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
                 writer.writerow(
@@ -434,9 +434,12 @@ class WalletService:
                         ]
                     )
 
-            return Result.success(str(filepath.resolve()))
-        except Exception as e:
-            return Result.failure(f"ფაილის ექსპორტის შეცდომა: {e}")
+            return str(filepath.resolve())
+
+        return Result.try_catch(
+            _write_csv,
+            error_mapper=lambda e: f"ფაილის ექსპორტის შეცდომა: {e}",
+        )
 
     def get_advanced_portfolio_analytics(self, user_id: int) -> dict:
         summary = self.get_portfolio_summary(user_id)

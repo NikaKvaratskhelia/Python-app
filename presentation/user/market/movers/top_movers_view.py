@@ -1,10 +1,6 @@
-import sys
-import select
-import io
 from rich.console import Console
-from rich.live import Live
 from rich.table import Table
-from core.helpers import clear_console
+from core.helpers import clear_console, run_live_loop
 from services.binance_ws import BinanceWSManager
 
 console = Console()
@@ -76,18 +72,5 @@ def show_live_top_movers(limit: int = 5):
         grid.add_row(losers_table)
         return grid
 
-    try:
-        with Live(build_display(), refresh_per_second=2, console=console) as live:
-            while True:
-                live.update(build_display())
-                try:
-                    rlist, _, _ = select.select([sys.stdin], [], [], 0.5)
-                except (io.UnsupportedOperation, ValueError, OSError):
-                    rlist = [sys.stdin]
-                if rlist:
-                    sys.stdin.readline()
-                    break
-    except KeyboardInterrupt:
-        pass
-    clear_console()
+    run_live_loop(build_display, console=console)
     console.print("\n[yellow]ტოპ ლიდერების მონიტორინგი შეჩერდა.[/yellow]")

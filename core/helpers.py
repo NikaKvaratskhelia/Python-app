@@ -1,12 +1,45 @@
+import io
 import os
+import select
 import subprocess
 import termios
 import tty
 import sys
+from typing import Callable, Any
+from rich.live import Live
+from rich.console import Console
 
 
 def clear_console():
     subprocess.run(["cls" if os.name == "nt" else "clear"], shell=True)
+
+
+def run_live_loop(
+    render_factory: Callable[[], Any],
+    refresh_per_second: int = 2,
+    console: Console | None = None,
+    poll_timeout: float = 0.5,
+    on_input: Callable[[str], Any] | None = None,
+) -> Any:
+    """Runs a Rich Live rendering loop until Enter or KeyboardInterrupt."""
+    cons = console or Console()
+    try:
+        with Live(render_factory(), refresh_per_second=refresh_per_second, console=cons) as live:
+            while True:
+                live.update(render_factory())
+                try:
+                    rlist, _, _ = select.select([sys.stdin], [], [], poll_timeout)
+                except (io.UnsupportedOperation, ValueError, OSError):
+                    rlist = [sys.stdin]
+                if rlist:
+                    line = sys.stdin.readline()
+                    if on_input:
+                        return on_input(line)
+                    break
+    except KeyboardInterrupt:
+        pass
+    clear_console()
+    return None
 
 
 def get_masked_password(prompt="Password: "):

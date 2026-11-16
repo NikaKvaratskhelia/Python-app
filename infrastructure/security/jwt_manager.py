@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from core.config import settings
+from core.result import Result
 import jwt
 
 SECRET_KEY = settings.JWT_SECRET_KEY
@@ -17,8 +18,6 @@ def create_access_token(user_id: int, username: str, role: str) -> str:
 
 
 def decode_access_token(token: str) -> dict | None:
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except jwt.PyJWTError:
-        return None
+    return Result.try_catch(
+        lambda: jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    ).value

@@ -1,13 +1,9 @@
-import sys
-import select
-import io
 from decimal import Decimal
 from rich.console import Console
-from rich.live import Live
 from rich.table import Table
 from rich.panel import Panel
 from core.database import get_db
-from core.helpers import clear_console
+from core.helpers import clear_console, run_live_loop
 from infrastructure.persistence.models.order_model import OrderModel
 from infrastructure.persistence.models.transaction_model import TransactionModel
 from services.wallet_service import WalletService
@@ -210,18 +206,5 @@ def run_live_wallet_view(user_id: int, username: str):
 
         return grid
 
-    try:
-        with Live(build_display(), refresh_per_second=2, console=console) as live:
-            while True:
-                live.update(build_display())
-                try:
-                    rlist, _, _ = select.select([sys.stdin], [], [], 0.5)
-                except (io.UnsupportedOperation, ValueError, OSError):
-                    rlist = [sys.stdin]
-                if rlist:
-                    sys.stdin.readline()
-                    break
-    except KeyboardInterrupt:
-        pass
-    clear_console()
+    run_live_loop(build_display, console=console)
     console.print("\n[yellow]LIVE საფულის მონიტორინგი შეჩერდა.[/yellow]")

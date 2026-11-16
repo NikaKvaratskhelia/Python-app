@@ -1,6 +1,6 @@
 from core.database import get_db
-from infrastructure.persistence.models.price_alert_model import PriceAlertModel
 from infrastructure.security.session_storage import clear_session
+from services.alert_service import AlertService
 from core.helpers import clear_console
 from presentation.user.profile.profile_menu import profile_menu
 from presentation.user.wallet.wallet_menu import wallet_menu
@@ -20,23 +20,15 @@ def run_user_menu(session_data: dict):
         username = session_data.get("username")
 
         if user_id:
-            try:
-                with get_db() as db:
-                    triggered_alerts = (
-                        db.query(PriceAlertModel)
-                        .filter(
-                            PriceAlertModel.user_id == user_id,
-                            PriceAlertModel.is_triggered == True,
+            with get_db() as db:
+                AlertService(db).get_triggered_alerts(user_id).tap(
+                    lambda alerts: [
+                        print(
+                            f"[ALERT] {al.symbol}/USDT-მ მიაღწია სამიზნე ფასს: ${al.target_price:,.2f} (პირობა: {al.condition})!"
                         )
-                        .all()
-                    )
-                    if triggered_alerts:
-                        for al in triggered_alerts:
-                            print(
-                                f"[ALERT] {al.symbol}/USDT-მ მიაღწია სამიზნე ფასს: ${al.target_price:,.2f} (პირობა: {al.condition})!"
-                            )
-            except Exception:
-                pass
+                        for al in alerts
+                    ]
+                )
 
         print(f"\n--- მომხმარებლის პანელი ({username}) ---")
         print("1. ჩემი პროფილის მართვა")

@@ -1,12 +1,8 @@
-import sys
-import select
-import io
 from decimal import Decimal
 from rich.console import Console
-from rich.live import Live
 from rich.table import Table
 from core.database import get_db
-from core.helpers import clear_console
+from core.helpers import clear_console, run_live_loop
 from infrastructure.persistence.models.order_model import OrderModel
 from infrastructure.persistence.models.wallet_model import WalletModel
 from services.binance_ws import BinanceWSManager
@@ -118,18 +114,5 @@ def run_view_orders_menu(user_id: int):
 
         return table
 
-    try:
-        with Live(build_table(), refresh_per_second=2, console=console) as live:
-            while True:
-                live.update(build_table())
-                try:
-                    rlist, _, _ = select.select([sys.stdin], [], [], 0.5)
-                except (io.UnsupportedOperation, ValueError, OSError):
-                    rlist = [sys.stdin]
-                if rlist:
-                    sys.stdin.readline()
-                    break
-    except KeyboardInterrupt:
-        pass
-    clear_console()
+    run_live_loop(build_table, console=console)
     console.print("\n[yellow]ორდერების მონიტორინგი შეჩერდა.[/yellow]")

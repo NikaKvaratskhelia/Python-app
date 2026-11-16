@@ -1,6 +1,6 @@
 import re
 
-from pydantic import TypeAdapter, ValidationError, StringConstraints
+from pydantic import TypeAdapter, StringConstraints
 from typing_extensions import Annotated
 from core.result import Result
 
@@ -15,13 +15,10 @@ class UserValidator:
         if not username or not username.strip():
             return Result.failure("მომხმარებლის სახელი არ შეიძლება იყოს ცარიელი.")
 
-        try:
-            validated = UserValidator._username_adapter.validate_python(username)
-            return Result.success(validated)
-        except ValidationError:
-            return Result.failure(
-                "მომხმარებლის სახელი უნდა შედგებოდეს მინიმუმ 3 სიმბოლოსგან."
-            )
+        return Result.try_catch(
+            lambda: UserValidator._username_adapter.validate_python(username),
+            error_mapper=lambda _: "მომხმარებლის სახელი უნდა შედგებოდეს მინიმუმ 3 სიმბოლოსგან.",
+        )
 
     @staticmethod
     def validate_password_hash(password_hash: str) -> Result[str, str]:
@@ -29,14 +26,6 @@ class UserValidator:
             return Result.failure("პაროლის ჰეში არ არის ვალიდური.")
 
         return Result.success(password_hash.strip())
-
-    @staticmethod
-    def validate_username(username: str) -> Result[str, str]:
-
-        if len(username) < 3:
-            return Result.failure("იუზერნეიმი უნდა შედგებოდეს მინიმუმ 3 სიმბოლოსგან.")
-
-        return Result.success(username)
 
     @staticmethod
     def validate_password(password: str) -> Result[str, str]:

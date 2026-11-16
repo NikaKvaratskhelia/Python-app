@@ -1,6 +1,7 @@
 import requests
 from decimal import Decimal
 from typing import List, Dict, Any, Optional
+from core.result import Result
 from services.binance_ws import BinanceWSManager
 
 
@@ -26,7 +27,7 @@ class ChartService:
         else:
             pair = sym
 
-        try:
+        def _fetch():
             resp = requests.get(
                 ChartService.BINANCE_KLINES_URL,
                 params={"symbol": pair, "interval": interval, "limit": limit},
@@ -45,8 +46,11 @@ class ChartService:
                         "volume": Decimal(str(item[5])),
                     })
                 return candles
-        except Exception:
-            pass
+            return None
+
+        candles_res = Result.try_catch(_fetch)
+        if candles_res.is_success and candles_res.value:
+            return candles_res.value
 
         # Fallback to simulated candles based on live price
         live_price = BinanceWSManager.get_price(sym) or Decimal("100.00")
