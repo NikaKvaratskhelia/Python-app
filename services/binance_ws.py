@@ -43,23 +43,33 @@ class BinanceWSManager:
     async def _stream_loop(cls):
         while cls._running:
             try:
-                async with websockets.connect(cls.WS_URL, ping_interval=20, ping_timeout=20) as ws:
+                async with websockets.connect(
+                    cls.WS_URL, ping_interval=20, ping_timeout=20
+                ) as ws:
                     logger.info("Binance WebSocket დაკავშირდა წარმატებით.")
+
                     while cls._running:
+
                         msg = await ws.recv()
                         data = json.loads(msg)
+
                         with cls._lock:
+
                             for item in data:
                                 raw_symbol = item.get("s", "")
+
                                 if raw_symbol.endswith("USDT"):
+
                                     base = raw_symbol[:-4]
                                     price = Decimal(str(item.get("c", "0")))
                                     open_p = Decimal(str(item.get("o", "0")))
+
                                     change = (
                                         ((price - open_p) / open_p * 100)
                                         if open_p > Decimal("0")
                                         else Decimal("0")
                                     )
+
                                     cls._latest_prices[base] = {
                                         "price": price,
                                         "open": open_p,
@@ -68,8 +78,11 @@ class BinanceWSManager:
                                         "low": Decimal(str(item.get("l", "0"))),
                                         "volume": Decimal(str(item.get("v", "0"))),
                                     }
+
             except Exception as e:
-                logger.warning(f"Binance WS კავშირი გაწყდა ({e}), თავიდან ცდა 2 წამში...")
+                logger.warning(
+                    f"Binance WS კავშირი გაწყდა ({e}), თავიდან ცდა 2 წამში..."
+                )
                 await asyncio.sleep(2)
 
     @classmethod
