@@ -162,7 +162,17 @@ def test_wallet_service_transfer_crypto(db_session):
 
 def test_wallet_service_transfer_validation(db_session):
     sender_id = _create_test_user(db_session, "sender_val")
+    receiver_id = _create_test_user(db_session, "receiver_val")
     service = WalletService(db_session)
+
+    # Transfer with alternative kwargs (from_user_id, to_username, symbol)
+    kwarg_res = service.transfer(
+        from_user_id=sender_id,
+        to_username="receiver_val",
+        symbol="USD",
+        amount=Decimal("50.00"),
+    )
+    assert kwarg_res.is_success
 
     # Transfer to self
     self_res = service.transfer(sender_id, "sender_val", "USD", Decimal("100.00"))

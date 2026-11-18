@@ -33,21 +33,24 @@ def run_transfer_menu(user_id: int):
         console.print(f"[red]შეცდომა: {parse_result.error}[/red]")
         return
 
+    transfer_res = None
     with get_db() as db:
         service = WalletService(db)
         transfer_res = service.transfer(
-            from_user_id=user_id,
-            to_username=to_username,
-            symbol=asset_type,
+            sender_user_id=user_id,
+            receiver_username=to_username,
+            asset_symbol=asset_type,
             amount=parse_result.value,
         )
 
-    if transfer_res.is_success:
+    if transfer_res and transfer_res.is_success:
         console.print(
             f"[green]წარმატებით გადაირიცხა {parse_result.value} {asset_type} მომხმარებელთან @{to_username}![/green]"
         )
-    else:
+    elif transfer_res:
         console.print(f"[red]შეცდომა: {transfer_res.error}[/red]")
+    else:
+        console.print("[red]შეცდომა: გადარიცხვა ვერ შესრულდა.[/red]")
 
     input("\nდააჭირეთ Enter-ს გასაგრძელებლად...")
     clear_console()

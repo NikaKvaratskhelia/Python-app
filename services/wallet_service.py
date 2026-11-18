@@ -2,6 +2,7 @@ import csv
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import Optional
 from sqlalchemy.orm import Session
 from core.database import get_db
 from infrastructure.persistence.repositories.wallet_repository import WalletRepository
@@ -257,11 +258,27 @@ class WalletService:
 
     def transfer(
         self,
-        sender_user_id: int,
-        receiver_username: str,
-        asset_symbol: str,
-        amount: Decimal,
+        sender_user_id: Optional[int] = None,
+        receiver_username: Optional[str] = None,
+        asset_symbol: Optional[str] = None,
+        amount: Optional[Decimal] = None,
+        *,
+        from_user_id: Optional[int] = None,
+        to_username: Optional[str] = None,
+        symbol: Optional[str] = None,
     ) -> Result[dict, str]:
+        sender_user_id = sender_user_id if sender_user_id is not None else from_user_id
+        receiver_username = receiver_username if receiver_username is not None else to_username
+        asset_symbol = asset_symbol if asset_symbol is not None else symbol
+
+        if (
+            sender_user_id is None
+            or receiver_username is None
+            or asset_symbol is None
+            or amount is None
+        ):
+            return Result.failure("არასწორი პარამეტრები გადარიცხვისთვის.")
+
         if amount <= Decimal("0"):
             return Result.failure("გადასარიცხი რაოდენობა უნდა იყოს 0-ზე მეტი.")
 
